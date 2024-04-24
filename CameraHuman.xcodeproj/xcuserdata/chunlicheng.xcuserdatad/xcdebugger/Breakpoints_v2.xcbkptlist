@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "E5AC4CB0-FEF4-427C-A428-3E0E4DEEC598"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "B6657142-CEF4-48EB-9466-E6AD0D2153DC"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/SoundDetector.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "48"
+            endingLineNumber = "48"
+            landmarkName = "setupSession()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "B6657142-CEF4-48EB-9466-E6AD0D2153DC - efa134d8f83d5fcc"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable () -&gt; () in CameraHuman.SoundDetector.setupSession() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "47"
+                  endingLineNumber = "47"
+                  offsetFromSymbolStart = "1220">
+               </Location>
+               <Location
+                  uuid = "B6657142-CEF4-48EB-9466-E6AD0D2153DC - efa134d8f83d5fcc"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable () -&gt; () in CameraHuman.SoundDetector.setupSession() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "47"
+                  endingLineNumber = "47"
+                  offsetFromSymbolStart = "1124">
+               </Location>
+               <Location
+                  uuid = "B6657142-CEF4-48EB-9466-E6AD0D2153DC - efa134d8f83d5fed"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable () -&gt; () in CameraHuman.SoundDetector.setupSession() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "48"
+                  endingLineNumber = "48"
+                  offsetFromSymbolStart = "1124">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "A0CF7C22-25E6-4DBE-A734-796889257BF5"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/SoundDetector.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "95"
+            endingLineNumber = "95"
+            landmarkName = "stopAudioCapture()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "A0CF7C22-25E6-4DBE-A734-796889257BF5 - a7fdffb343f93232"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.stopAudioCapture() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "94"
+                  endingLineNumber = "94"
+                  offsetFromSymbolStart = "24">
+               </Location>
+               <Location
+                  uuid = "A0CF7C22-25E6-4DBE-A734-796889257BF5 - a7fdffb343f93215"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.stopAudioCapture() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "95"
+                  endingLineNumber = "95"
+                  offsetFromSymbolStart = "24">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "81D21AD0-7A9D-4153-9F5E-26656099906E"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/SoundDetector.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "102"
+            endingLineNumber = "102"
+            landmarkName = "captureOutput(_:didOutput:from:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "81D21AD0-7A9D-4153-9F5E-26656099906E - 23e1af28358829ad"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.captureOutput(_: __C.AVCaptureOutput, didOutput: __C.CMSampleBufferRef, from: __C.AVCaptureConnection) -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "102"
+                  endingLineNumber = "102"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  uuid = "81D21AD0-7A9D-4153-9F5E-26656099906E - 23e1af283588298a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.captureOutput(_: __C.AVCaptureOutput, didOutput: __C.CMSampleBufferRef, from: __C.AVCaptureConnection) -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "103"
+                  endingLineNumber = "103"
+                  offsetFromSymbolStart = "64">
+               </Location>
+               <Location
+                  uuid = "81D21AD0-7A9D-4153-9F5E-26656099906E - 23e1af28358829eb"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.captureOutput(_: __C.AVCaptureOutput, didOutput: __C.CMSampleBufferRef, from: __C.AVCaptureConnection) -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "104"
+                  endingLineNumber = "104"
+                  offsetFromSymbolStart = "64">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "45FB8C10-BA74-405F-A5FC-11F06569D01D"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/SoundDetector.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "86"
+            endingLineNumber = "86"
+            landmarkName = "startAudioCapture()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "45FB8C10-BA74-405F-A5FC-11F06569D01D - 2eaaa9e968cb0e93"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.startAudioCapture() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "86"
+                  endingLineNumber = "86"
+                  offsetFromSymbolStart = "1044">
+               </Location>
+               <Location
+                  uuid = "45FB8C10-BA74-405F-A5FC-11F06569D01D - 2eaaa9e968cb0e93"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.startAudioCapture() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "86"
+                  endingLineNumber = "86"
+                  offsetFromSymbolStart = "1328">
+               </Location>
+               <Location
+                  uuid = "45FB8C10-BA74-405F-A5FC-11F06569D01D - c0a7b709e2c24908"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable () -&gt; () in CameraHuman.SoundDetector.startAudioCapture() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "87"
+                  endingLineNumber = "87"
+                  offsetFromSymbolStart = "28">
+               </Location>
+               <Location
+                  uuid = "45FB8C10-BA74-405F-A5FC-11F06569D01D - 2eaaa9e968cb0eb4"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.startAudioCapture() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "87"
+                  endingLineNumber = "87"
+                  offsetFromSymbolStart = "1328">
+               </Location>
+               <Location
+                  uuid = "45FB8C10-BA74-405F-A5FC-11F06569D01D - c0a7b709e2c24969"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable () -&gt; () in CameraHuman.SoundDetector.startAudioCapture() -&gt; ()"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "88"
+                  endingLineNumber = "88"
+                  offsetFromSymbolStart = "28">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "DFCBF04B-64A8-42B6-8E29-67ACDD9777A2"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/SoundDetector.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "110"
+            endingLineNumber = "110"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "DFCBF04B-64A8-42B6-8E29-67ACDD9777A2 - f3c4b12dc3ff90df"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.getAudioLevel(from: __C.CMSampleBufferRef) -&gt; Swift.Float"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "110"
+                  endingLineNumber = "110"
+                  offsetFromSymbolStart = "24">
+               </Location>
+               <Location
+                  uuid = "DFCBF04B-64A8-42B6-8E29-67ACDD9777A2 - f3c4b12dc3ff90b8"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CameraHuman.SoundDetector.getAudioLevel(from: __C.CMSampleBufferRef) -&gt; Swift.Float"
+                  moduleName = "CameraHuman"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chunlicheng/Desktop/CameraHuman/CameraHuman/SoundDetector.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "111"
+                  endingLineNumber = "111"
+                  offsetFromSymbolStart = "24">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2C1223B8-E280-43F6-BDB9-C5C9D4B399A5"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "237"
+            endingLineNumber = "237"
+            landmarkName = "captureOutput(_:didOutput:from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3C0FDC83-C384-48FC-8A65-29C60FEDB625"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "277"
+            endingLineNumber = "277"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "9B01BA7E-B844-4ECE-8BFF-592069B55B6C"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "283"
+            endingLineNumber = "283"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "486E4EBC-A365-4B2B-AC9D-F4485314C2B2"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "291"
+            endingLineNumber = "291"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F6FDE90B-5AEC-4941-A7E5-78C8A97774E9"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "302"
+            endingLineNumber = "302"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "8906991C-7A6A-449D-9695-37487B374275"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "308"
+            endingLineNumber = "308"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "B2C63062-628D-4830-86CD-A4C4C3BC132D"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "309"
+            endingLineNumber = "309"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "113DB544-2BEC-490C-BC8D-9BDF6778AF56"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "312"
+            endingLineNumber = "312"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "33CBDB3D-9513-4803-9A96-2B18CFB8703C"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "315"
+            endingLineNumber = "315"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D2FD817C-F806-4CA7-85E9-344B6927EC81"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CameraHuman/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "316"
+            endingLineNumber = "316"
+            landmarkName = "getAudioLevel(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

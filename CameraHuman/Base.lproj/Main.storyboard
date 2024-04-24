@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="CameraHuman" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3VI-uD-fwz">
+                                <rect key="frame" x="8" y="67" width="377" height="759"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Lhl-fp-Jz2">
+                                        <rect key="frame" x="151" y="118" width="75" height="35"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="75" id="ePP-2Y-ML4"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                        <connections>
+                                            <action selector="checkButtonTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="B9k-JI-9Na"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="Lhl-fp-Jz2" firstAttribute="centerX" secondItem="3VI-uD-fwz" secondAttribute="centerX" id="SfE-0B-8VW"/>
+                                    <constraint firstItem="Lhl-fp-Jz2" firstAttribute="top" secondItem="3VI-uD-fwz" secondAttribute="top" constant="118" id="aNl-v4-kDV"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" tag="101" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p9n-Al-UEq">
+                                <rect key="frame" x="154" y="408.66666666666669" width="85" height="35"/>
+                                <color key="backgroundColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Capture"/>
+                                <connections>
+                                    <action selector="captureBtnTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="MO8-cS-PsB"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qXR-0r-QgL">
+                                <rect key="frame" x="166.66666666666666" y="487.66666666666669" width="60" height="35.000000000000057"/>
+                                <color key="backgroundColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Stop"/>
+                                <connections>
+                                    <action selector="captureBtnTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="usz-to-oKF"/>
+                                    <action selector="stopCaptureTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="CbL-24-gED"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="3VI-uD-fwz" secondAttribute="trailing" constant="8" id="1gk-QD-zaK"/>
+                            <constraint firstItem="p9n-Al-UEq" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="2d1-az-ASF"/>
+                            <constraint firstItem="p9n-Al-UEq" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="85Z-7T-RJE"/>
+                            <constraint firstItem="3VI-uD-fwz" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="8" id="QpK-gu-Wgq"/>
+                            <constraint firstItem="3VI-uD-fwz" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="8" id="VUu-8U-iSc"/>
+                            <constraint firstItem="qXR-0r-QgL" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="dPi-A9-Mua"/>
+                            <constraint firstItem="3VI-uD-fwz" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" constant="8" id="e3s-8s-4Ug"/>
+                            <constraint firstItem="qXR-0r-QgL" firstAttribute="top" secondItem="p9n-Al-UEq" secondAttribute="bottom" constant="44" id="nhI-kD-veX"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="captureBtn" destination="p9n-Al-UEq" id="avO-Zu-MLC"/>
+                        <outlet property="checkButton" destination="Lhl-fp-Jz2" id="ws2-ch-0Z8"/>
+                        <outlet property="frameView" destination="3VI-uD-fwz" id="Ald-NB-ohH"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="90.839694656488547" y="3.5211267605633805"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
