@@ -53,6 +53,8 @@ class ViewController: UIViewController {
         
 //        soundLevelBarHeightConstraint = soundLevelBar.heightAnchor.constraint(equalToConstant: 100)
 //        soundLevelBarHeightConstraint?.isActive = true
+        
+        print("good verbose.")
     }
 
     @IBAction func checkButtonTapped(_ sender: UIButton) {
