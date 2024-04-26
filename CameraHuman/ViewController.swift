@@ -55,9 +55,6 @@ class ViewController: UIViewController {
 //        soundLevelBarHeightConstraint?.isActive = true
         
         print("good verbose.")
-        print("addNewOne")
-        print("add add")
-        print("add a")
     }
 
     @IBAction func checkButtonTapped(_ sender: UIButton) {
