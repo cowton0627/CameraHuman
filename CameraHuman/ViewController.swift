@@ -56,6 +56,7 @@ class ViewController: UIViewController {
         
         print("good verbose.")
         print("addNewOne")
+        print("add add")
     }
 
     @IBAction func checkButtonTapped(_ sender: UIButton) {
