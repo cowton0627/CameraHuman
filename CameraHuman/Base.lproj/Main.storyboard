@@ -25,8 +25,8 @@
                                         <constraints>
                                             <constraint firstAttribute="width" constant="75" id="ePP-2Y-ML4"/>
                                         </constraints>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                        <state key="normal" title="檢查鏡頭"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="檢查鏡頭"/>
                                         <connections>
                                             <action selector="checkButtonTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="B9k-JI-9Na"/>
                                         </connections>
@@ -41,8 +41,8 @@
                             <button opaque="NO" tag="101" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p9n-Al-UEq">
                                 <rect key="frame" x="154" y="408.66666666666669" width="85" height="35"/>
                                 <color key="backgroundColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Capture"/>
+                                <state key="normal" title="開始監測"/>
+                                <buttonConfiguration key="configuration" style="plain" title="開始監測"/>
                                 <connections>
                                     <action selector="captureBtnTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="MO8-cS-PsB"/>
                                 </connections>
@@ -50,10 +50,9 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qXR-0r-QgL">
                                 <rect key="frame" x="166.66666666666666" y="487.66666666666669" width="60" height="35.000000000000057"/>
                                 <color key="backgroundColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Stop"/>
+                                <state key="normal" title="停止"/>
+                                <buttonConfiguration key="configuration" style="plain" title="停止"/>
                                 <connections>
-                                    <action selector="captureBtnTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="usz-to-oKF"/>
                                     <action selector="stopCaptureTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="CbL-24-gED"/>
                                 </connections>
                             </button>
@@ -75,6 +74,7 @@
                         <outlet property="captureBtn" destination="p9n-Al-UEq" id="avO-Zu-MLC"/>
                         <outlet property="checkButton" destination="Lhl-fp-Jz2" id="ws2-ch-0Z8"/>
                         <outlet property="frameView" destination="3VI-uD-fwz" id="Ald-NB-ohH"/>
+                        <outlet property="stopButton" destination="qXR-0r-QgL" id="H3n-NG-O5P"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

@@ -8,106 +8,131 @@
 import Foundation
 import AVFoundation
 
-class SoundDetector: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate {
-    private var session = AVCaptureSession()
-    private let audioOutput = AVCaptureAudioDataOutput()
-    
+final class SoundDetector {
+    struct LevelSnapshot {
+        let decibels: Float
+        let normalizedLevel: Float
+    }
 
-    func startListening() {
+    enum State {
+        case idle
+        case requestingPermission
+        case running
+        case permissionDenied
+        case failed(String)
+    }
+
+    var onStateChange: ((State) -> Void)?
+    var onLevelUpdate: ((LevelSnapshot) -> Void)?
+
+    private let audioEngine = AVAudioEngine()
+    private let engineQueue = DispatchQueue(label: "com.camerahuman.audio-engine")
+
+    private var isRunning = false
+    private var smoothedLevel: Float = 0
+
+    func startMonitoring() {
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
         case .authorized:
-            setupSession()
+            startEngine()
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .audio) { granted in
-                if granted {
-                    self.setupSession()
-                }
+            publish(state: .requestingPermission)
+            AVCaptureDevice.requestAccess(for: .audio) { [weak self] granted in
+                guard let self else { return }
+                granted ? self.startEngine() : self.publish(state: .permissionDenied)
             }
-        default:
-            // Handle error or denial
-            break
+        case .denied, .restricted:
+            publish(state: .permissionDenied)
+        @unknown default:
+            publish(state: .failed("未知的麥克風權限狀態"))
         }
     }
 
-    private func setupSession() {
-        DispatchQueue.global(qos: .userInitiated).async {
-            guard let audioDevice = AVCaptureDevice.default(for: .audio),
-                  let audioInput = try? AVCaptureDeviceInput(device: audioDevice) else {
+    func stopMonitoring() {
+        engineQueue.async { [weak self] in
+            guard let self else { return }
+            guard self.isRunning else {
+                self.publish(state: .idle)
                 return
             }
 
-            self.session.beginConfiguration()
-            if self.session.canAddInput(audioInput) {
-                self.session.addInput(audioInput)
+            self.audioEngine.inputNode.removeTap(onBus: 0)
+            self.audioEngine.stop()
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+
+            self.isRunning = false
+            self.smoothedLevel = 0
+            self.publish(level: LevelSnapshot(decibels: -80, normalizedLevel: 0))
+            self.publish(state: .idle)
+        }
+    }
+
+    private func startEngine() {
+        engineQueue.async { [weak self] in
+            guard let self else { return }
+            guard !self.isRunning else {
+                self.publish(state: .running)
+                return
             }
-            if self.session.canAddOutput(self.audioOutput) {
-                self.session.addOutput(self.audioOutput)
+
+            let session = AVAudioSession.sharedInstance()
+
+            do {
+                try session.setCategory(.record, mode: .measurement, options: [.duckOthers])
+                try session.setActive(true, options: .notifyOthersOnDeactivation)
+
+                let inputNode = self.audioEngine.inputNode
+                let format = inputNode.inputFormat(forBus: 0)
+
+                inputNode.removeTap(onBus: 0)
+                inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
+                    self?.handleAudioBuffer(buffer)
+                }
+
+                self.audioEngine.prepare()
+                try self.audioEngine.start()
+
+                self.isRunning = true
+                self.publish(state: .running)
+            } catch {
+                self.audioEngine.inputNode.removeTap(onBus: 0)
+                self.audioEngine.stop()
+                try? session.setActive(false, options: .notifyOthersOnDeactivation)
+                self.isRunning = false
+                self.publish(state: .failed(error.localizedDescription))
             }
-            self.audioOutput.setSampleBufferDelegate(self, 
-                                                     queue: DispatchQueue(label: "audioQueue"))
-            self.session.commitConfiguration()
-            self.session.startRunning()
-        }
-//        guard let audioDevice = AVCaptureDevice.default(for: .audio),
-//              let audioInput = try? AVCaptureDeviceInput(device: audioDevice) else {
-//            return
-//        }
-//        session.beginConfiguration()
-//        if session.canAddInput(audioInput) {
-//            session.addInput(audioInput)
-//        }
-//        if session.canAddOutput(audioOutput) {
-//            session.addOutput(audioOutput)
-//        }
-//        audioOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "audioQueue"))
-//        session.commitConfiguration()
-//        session.startRunning()
-    }
-
-    // Function to start capturing audio
-    func startAudioCapture() {
-        let session = AVCaptureSession()
-        self.session = session
-
-        guard let audioDevice = AVCaptureDevice.default(for: .audio),
-              let audioInput = try? AVCaptureDeviceInput(device: audioDevice) else {
-            print("Unable to access the microphone.")
-            return
-        }
-
-        if session.canAddInput(audioInput) {
-            session.addInput(audioInput)
-        }
-
-        if session.canAddOutput(audioOutput) {
-            session.addOutput(audioOutput)
-            audioOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "audioQueue"))
-        }
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            session.startRunning()
         }
     }
-    
-    
 
-    func stopAudioCapture() {
-        session.stopRunning()
+    private func handleAudioBuffer(_ buffer: AVAudioPCMBuffer) {
+        guard let channelData = buffer.floatChannelData?.pointee else { return }
+
+        let frameLength = Int(buffer.frameLength)
+        guard frameLength > 0 else { return }
+
+        var sum: Float = 0
+        for frame in 0..<frameLength {
+            let sample = channelData[frame]
+            sum += sample * sample
+        }
+
+        let rms = sqrt(sum / Float(frameLength))
+        let decibels = max(20 * log10(max(rms, 0.000_01)), -80)
+        let normalized = max(0, min(1, (decibels + 80) / 80))
+
+        smoothedLevel = (smoothedLevel * 0.75) + (normalized * 0.25)
+        publish(level: LevelSnapshot(decibels: decibels, normalizedLevel: smoothedLevel))
     }
 
-    // Delegate method to analyze captured audio
-    func captureOutput(_ output: AVCaptureOutput, 
-                       didOutput sampleBuffer: CMSampleBuffer,
-                       from connection: AVCaptureConnection) {
-        // Here you could analyze the audio levels, frequencies, etc.
-        // This is a placeholder for where you'd implement your analysis.
-        var audioLevel = getAudioLevel(from: sampleBuffer)
-        // Do something with the audio level or other analysis results
-  
+    private func publish(state: State) {
+        DispatchQueue.main.async {
+            self.onStateChange?(state)
+        }
     }
-    
-    func getAudioLevel(from sampleBuffer: CMSampleBuffer) -> Float {
-        // This function is a placeholder. Implement your own logic to analyze the audio level.
-        return 1.0 // Example fixed value, replace with actual audio analysis
+
+    private func publish(level: LevelSnapshot) {
+        DispatchQueue.main.async {
+            self.onLevelUpdate?(level)
+        }
     }
 }
