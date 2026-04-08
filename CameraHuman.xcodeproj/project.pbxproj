@@ -15,6 +15,9 @@
 		91C4CA7A2BA154570058B34B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 91C4CA792BA154570058B34B /* Assets.xcassets */; };
 		91C4CA7D2BA154570058B34B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 91C4CA7B2BA154570058B34B /* LaunchScreen.storyboard */; };
 		91C4CA852BA1557F0058B34B /* SoundDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA842BA1557F0058B34B /* SoundDetector.swift */; };
+		91C4CA872BA1557F0058B34B /* RootTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA862BA1557F0058B34B /* RootTabBarController.swift */; };
+		91C4CA892BA1557F0058B34B /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA882BA1557F0058B34B /* CameraViewController.swift */; };
+		91C4CA8B2BA1557F0058B34B /* SoundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA8A2BA1557F0058B34B /* SoundViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +31,9 @@
 		91C4CA7C2BA154570058B34B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		91C4CA7E2BA154570058B34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		91C4CA842BA1557F0058B34B /* SoundDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundDetector.swift; sourceTree = "<group>"; };
+		91C4CA862BA1557F0058B34B /* RootTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabBarController.swift; sourceTree = "<group>"; };
+		91C4CA882BA1557F0058B34B /* CameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		91C4CA8A2BA1557F0058B34B /* SoundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +70,9 @@
 				91C4CA6F2BA154550058B34B /* SceneDelegate.swift */,
 				91C4CA712BA154550058B34B /* ViewController.swift */,
 				91C4CA842BA1557F0058B34B /* SoundDetector.swift */,
+				91C4CA862BA1557F0058B34B /* RootTabBarController.swift */,
+				91C4CA882BA1557F0058B34B /* CameraViewController.swift */,
+				91C4CA8A2BA1557F0058B34B /* SoundViewController.swift */,
 				91C4CA732BA154550058B34B /* Main.storyboard */,
 				91C4CA792BA154570058B34B /* Assets.xcassets */,
 				91C4CA7B2BA154570058B34B /* LaunchScreen.storyboard */,
@@ -144,8 +153,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				91C4CA892BA1557F0058B34B /* CameraViewController.swift in Sources */,
+				91C4CA8B2BA1557F0058B34B /* SoundViewController.swift in Sources */,
 				91C4CA722BA154550058B34B /* ViewController.swift in Sources */,
 				91C4CA6E2BA154550058B34B /* AppDelegate.swift in Sources */,
+				91C4CA872BA1557F0058B34B /* RootTabBarController.swift in Sources */,
 				91C4CA852BA1557F0058B34B /* SoundDetector.swift in Sources */,
 				91C4CA782BA154550058B34B /* CameraHuman.xcdatamodeld in Sources */,
 				91C4CA702BA154550058B34B /* SceneDelegate.swift in Sources */,
