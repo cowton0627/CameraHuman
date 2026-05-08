@@ -331,7 +331,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "240"
             endingLineNumber = "240"
-            landmarkName = "updateMeterAppearance(color:)"
+            landmarkName = "configureCameraPage()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -347,7 +347,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "280"
             endingLineNumber = "280"
-            landmarkName = "buildCameraReport()"
+            landmarkName = "configureCameraPage()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -363,7 +363,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "286"
             endingLineNumber = "286"
-            landmarkName = "buildCameraReport()"
+            landmarkName = "configureCameraPage()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -379,7 +379,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "294"
             endingLineNumber = "294"
-            landmarkName = "buildCameraReport()"
+            landmarkName = "configureCameraPage()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -395,7 +395,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "305"
             endingLineNumber = "305"
-            landmarkName = "styleButton(_:title:backgroundColor:)"
+            landmarkName = "configureSoundPage()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -410,7 +410,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "311"
-            endingLineNumber = "311">
+            endingLineNumber = "311"
+            landmarkName = "configureSoundPage()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -424,7 +426,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "312"
-            endingLineNumber = "312">
+            endingLineNumber = "312"
+            landmarkName = "configureSoundPage()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -438,7 +442,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "315"
-            endingLineNumber = "315">
+            endingLineNumber = "315"
+            landmarkName = "configureSoundPage()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -452,7 +458,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "318"
-            endingLineNumber = "318">
+            endingLineNumber = "318"
+            landmarkName = "configureSoundPage()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -466,7 +474,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "319"
-            endingLineNumber = "319">
+            endingLineNumber = "319"
+            landmarkName = "configureSoundPage()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
