@@ -11,21 +11,37 @@ final class RootTabBarController: UITabBarController {
 
         let cameraViewController: CameraViewController = CameraViewController()
         cameraViewController.tabBarItem = UITabBarItem(
-            title: "相機",
+            title: "Camera",
             image: UIImage(systemName: "camera"),
             selectedImage: UIImage(systemName: "camera.fill")
         )
 
-        let soundViewController: SoundViewController = SoundViewController()
-        soundViewController.tabBarItem = UITabBarItem(
-            title: "聲音",
-            image: UIImage(systemName: "waveform"),
-            selectedImage: UIImage(systemName: "waveform.circle.fill")
+        let mediaViewController = MediaViewController()
+        mediaViewController.tabBarItem = UITabBarItem(
+            title: "Media",
+            image: UIImage(systemName: "film"),
+            selectedImage: UIImage(systemName: "film.fill")
+        )
+
+        let chatViewController = ChatViewController()
+        chatViewController.tabBarItem = UITabBarItem(
+            title: "Chat",
+            image: UIImage(systemName: "bubble.left.and.bubble.right"),
+            selectedImage: UIImage(systemName: "bubble.left.and.bubble.right.fill")
+        )
+
+        let settingsViewController = SettingsViewController()
+        settingsViewController.tabBarItem = UITabBarItem(
+            title: "Settings",
+            image: UIImage(systemName: "gearshape"),
+            selectedImage: UIImage(systemName: "gearshape.fill")
         )
 
         viewControllers = [
             cameraViewController,
-            soundViewController
+            mediaViewController,
+            chatViewController,
+            settingsViewController
         ]
         configureAppearance()
     }
@@ -33,7 +49,7 @@ final class RootTabBarController: UITabBarController {
     private func configureAppearance() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .systemBackground
+        appearance.backgroundColor = .black
 
         let normalColor = UIColor.systemGray
         let selectedColor = UIColor.systemBlue
