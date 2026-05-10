@@ -98,12 +98,19 @@ scripts/
 └── generate_app_icon.swift                用 CoreGraphics 產 1024×1024 AppIcon
 ```
 
-## Technical Docs
+## Documentation
 
-- [`docs/camera-architecture.md`](./docs/camera-architecture.md)
-  相機頁的 service 層、capture session、鏡頭策略、錄影流程、HUD 與資料流設計。
-- [`docs/development-workflow.md`](./docs/development-workflow.md)
-  這個 repo 的實際開發、build 驗證、真機測試與 git 工作流程。
+每份檔案各自只做一件事，避免內容散落：
+
+| 檔案 | 用途 |
+|---|---|
+| [`README.md`](./README.md) | 你正在看的這份。產品 / 架構速覽 |
+| [`roadmap.md`](./roadmap.md) | Done + 還沒做的事（Short / Mid / Long Term + Technical Debt） |
+| [`DECISIONS.md`](./DECISIONS.md) | 12 個架構決策的「為什麼」與放棄了什麼 |
+| [`bugs.md`](./bugs.md) | 踩過的坑（症狀 / 根因 / 解法） |
+| [`runbook.md`](./runbook.md) | Build、模擬器、icon 生成、清快取等實際指令 |
+| [`docs/camera-architecture.md`](./docs/camera-architecture.md) | 相機頁 service 層、capture session、HUD 與資料流設計 |
+| [`docs/development-workflow.md`](./docs/development-workflow.md) | 開發流程、build 驗證、真機測試、git 流程 |
 
 ## Build
 
@@ -124,6 +131,3 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
 - `Chat` 還是本地 keyword 引擎；架構已用 `ChatEngine` 協定預留 swap 點，但未接外部 AI。
 - `Media` 是單層素材列表，沒有專案、資料夾或標籤系統。
 
-## Roadmap
-
-「下一步要做什麼」「該重構什麼」「累積的技術債」全部集中在 [`roadmap.md`](./roadmap.md)，這裡不再重複列出，避免兩處 drift。
