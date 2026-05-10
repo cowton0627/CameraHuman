@@ -48,15 +48,15 @@ final class SettingsViewController: UIViewController {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
-        stackView.spacing = 20
+        stackView.spacing = 14
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = .monospacedSystemFont(ofSize: 24, weight: .semibold)
+        titleLabel.font = .monospacedSystemFont(ofSize: 22, weight: .semibold)
         titleLabel.textColor = .white
         titleLabel.text = "Settings"
 
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        descriptionLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        descriptionLabel.font = .systemFont(ofSize: 13, weight: .regular)
         descriptionLabel.textColor = UIColor.white.withAlphaComponent(0.72)
         descriptionLabel.numberOfLines = 0
         descriptionLabel.text = "把原本寫死在 Camera 頁面的拍攝偏好抽到這裡，畫質、比例、啟動鏡頭與格線都由設定控制。"
@@ -85,10 +85,10 @@ final class SettingsViewController: UIViewController {
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 20),
             stackView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -20),
-            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 20),
+            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 14),
             stackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -24),
             stackView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -40)
         ])
@@ -104,11 +104,11 @@ final class SettingsViewController: UIViewController {
     private func makeSection(title: String, control: UISegmentedControl) -> UIView {
         let container = UIView()
         container.backgroundColor = UIColor.white.withAlphaComponent(0.08)
-        container.layer.cornerRadius = 18
+        container.layer.cornerRadius = 14
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = .monospacedSystemFont(ofSize: 13, weight: .semibold)
+        titleLabel.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
         titleLabel.textColor = UIColor.systemBlue
         titleLabel.text = title
 
@@ -119,13 +119,13 @@ final class SettingsViewController: UIViewController {
         container.addSubview(control)
 
         NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-            titleLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
-            control.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            control.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-            control.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
-            control.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -16)
+            titleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
+            titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -14),
+            titleLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
+            control.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
+            control.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -14),
+            control.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
+            control.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -12)
         ])
 
         return container
@@ -134,17 +134,17 @@ final class SettingsViewController: UIViewController {
     private func makeSwitchSection(title: String, subtitle: String, toggle: UISwitch) -> UIView {
         let container = UIView()
         container.backgroundColor = UIColor.white.withAlphaComponent(0.08)
-        container.layer.cornerRadius = 18
+        container.layer.cornerRadius = 14
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = .monospacedSystemFont(ofSize: 13, weight: .semibold)
+        titleLabel.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
         titleLabel.textColor = UIColor.systemBlue
         titleLabel.text = title
 
         let subtitleLabel = UILabel()
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        subtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
         subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.72)
         subtitleLabel.numberOfLines = 0
         subtitleLabel.text = subtitle
@@ -156,14 +156,14 @@ final class SettingsViewController: UIViewController {
         container.addSubview(toggle)
 
         NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            titleLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
-            toggle.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
+            titleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
+            titleLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
+            toggle.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -14),
             toggle.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            subtitleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
-            subtitleLabel.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -16)
+            subtitleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -14),
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
+            subtitleLabel.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -12)
         ])
 
         return container

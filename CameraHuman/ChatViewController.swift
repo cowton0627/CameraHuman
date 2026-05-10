@@ -33,6 +33,8 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
     private let inputContainerView = UIView()
     private let inputField = UITextField()
     private let sendButton = UIButton(type: .system)
+    private var inputBottomConstraint: NSLayoutConstraint!
+    private static let inputBottomPadding: CGFloat = 12
 
     private var messages: [Message] = [
         Message(role: .assistant, text: "這裡是拍攝助理。你可以問目前設定、最近素材，或要我幫你整理下一個拍攝步驟。")
@@ -44,7 +46,10 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         NotificationCenter.default.addObserver(self, selector: #selector(externalStateDidChange), name: .mediaLibraryDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(externalStateDidChange), name: .cameraSettingsDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(plannerDidChange), name: .shotPlannerDidChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
         configureUI()
+        installKeyboardDismissGestures()
         reloadPlannerUI()
     }
 
@@ -82,17 +87,54 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         sendCurrentInput()
+        textField.resignFirstResponder()
         return true
+    }
+
+    private func installKeyboardDismissGestures() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+        tableView.keyboardDismissMode = .interactive
+    }
+
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+
+    @objc private func keyboardWillChangeFrame(_ note: Notification) {
+        guard let info = note.userInfo,
+              let endFrame = (info[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue,
+              let duration = info[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+
+        let keyboardTopY = view.convert(endFrame, from: nil).minY
+        let safeBottomY = view.bounds.height - view.safeAreaInsets.bottom
+        let intrusion = max(0, safeBottomY - keyboardTopY)
+        inputBottomConstraint.constant = -Self.inputBottomPadding - intrusion
+
+        let curveRaw = (info[UIResponder.keyboardAnimationCurveUserInfoKey] as? Int) ?? Int(UIView.AnimationCurve.easeInOut.rawValue)
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            options: UIView.AnimationOptions(rawValue: UInt(curveRaw) << 16),
+            animations: { self.view.layoutIfNeeded() }
+        )
+    }
+
+    @objc private func keyboardWillHide(_ note: Notification) {
+        guard let duration = note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        inputBottomConstraint.constant = -Self.inputBottomPadding
+        UIView.animate(withDuration: duration) { self.view.layoutIfNeeded() }
     }
 
     private func configureUI() {
         headerLabel.translatesAutoresizingMaskIntoConstraints = false
-        headerLabel.font = .monospacedSystemFont(ofSize: 24, weight: .semibold)
+        headerLabel.font = .monospacedSystemFont(ofSize: 22, weight: .semibold)
         headerLabel.textColor = .white
         headerLabel.text = "Chat"
 
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        subtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
         subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.72)
         subtitleLabel.numberOfLines = 0
         subtitleLabel.text = "目前會讀取最新設定與最近素材，幫你整理拍攝狀態。"
@@ -107,7 +149,9 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
             let button = UIButton(type: .system)
             button.setTitle(title, for: .normal)
             button.setTitleColor(.white, for: .normal)
-            button.titleLabel?.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
+            button.titleLabel?.font = .monospacedSystemFont(ofSize: 11, weight: .semibold)
+            button.titleLabel?.adjustsFontSizeToFitWidth = true
+            button.titleLabel?.minimumScaleFactor = 0.78
             button.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.22)
             button.layer.cornerRadius = 14
             button.addTarget(self, action: #selector(quickActionTapped(_:)), for: .touchUpInside)
@@ -116,11 +160,11 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
 
         plannerStackView.translatesAutoresizingMaskIntoConstraints = false
         plannerStackView.axis = .vertical
-        plannerStackView.spacing = 12
-        plannerStackView.layoutMargins = UIEdgeInsets(top: 14, left: 14, bottom: 14, right: 14)
+        plannerStackView.spacing = 8
+        plannerStackView.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         plannerStackView.isLayoutMarginsRelativeArrangement = true
         plannerStackView.backgroundColor = UIColor.white.withAlphaComponent(0.08)
-        plannerStackView.layer.cornerRadius = 20
+        plannerStackView.layer.cornerRadius = 14
 
         checklistStatusLabel.translatesAutoresizingMaskIntoConstraints = false
         checklistStatusLabel.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
@@ -133,27 +177,27 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         notesTextView.translatesAutoresizingMaskIntoConstraints = false
         notesTextView.backgroundColor = UIColor.white.withAlphaComponent(0.06)
         notesTextView.textColor = .white
-        notesTextView.font = .systemFont(ofSize: 14, weight: .regular)
-        notesTextView.layer.cornerRadius = 14
+        notesTextView.font = .systemFont(ofSize: 13, weight: .regular)
+        notesTextView.layer.cornerRadius = 10
         notesTextView.textContainerInset = UIEdgeInsets(top: 10, left: 8, bottom: 10, right: 8)
-        notesTextView.heightAnchor.constraint(equalToConstant: 88).isActive = true
+        notesTextView.heightAnchor.constraint(equalToConstant: 72).isActive = true
 
         saveNotesButton.translatesAutoresizingMaskIntoConstraints = false
         saveNotesButton.setTitle("儲存備忘", for: .normal)
         saveNotesButton.setTitleColor(.white, for: .normal)
-        saveNotesButton.titleLabel?.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
+        saveNotesButton.titleLabel?.font = .monospacedSystemFont(ofSize: 11, weight: .semibold)
         saveNotesButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.22)
         saveNotesButton.layer.cornerRadius = 12
         saveNotesButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
         saveNotesButton.addTarget(self, action: #selector(saveNotesTapped(_:)), for: .touchUpInside)
 
         linkedClipLabel.translatesAutoresizingMaskIntoConstraints = false
-        linkedClipLabel.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+        linkedClipLabel.font = .monospacedSystemFont(ofSize: 10, weight: .regular)
         linkedClipLabel.textColor = UIColor.white.withAlphaComponent(0.78)
         linkedClipLabel.numberOfLines = 1
 
         actionItemsLabel.translatesAutoresizingMaskIntoConstraints = false
-        actionItemsLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        actionItemsLabel.font = .systemFont(ofSize: 12, weight: .regular)
         actionItemsLabel.textColor = UIColor.white.withAlphaComponent(0.82)
         actionItemsLabel.numberOfLines = 0
 
@@ -203,7 +247,13 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         inputContainerView.addSubview(inputField)
         inputContainerView.addSubview(sendButton)
 
+        inputBottomConstraint = inputContainerView.bottomAnchor.constraint(
+            equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+            constant: -Self.inputBottomPadding
+        )
+
         NSLayoutConstraint.activate([
+            inputBottomConstraint,
             headerLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
             headerLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
 
@@ -214,7 +264,7 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
             quickActionsStackView.leadingAnchor.constraint(equalTo: headerLabel.leadingAnchor),
             quickActionsStackView.trailingAnchor.constraint(equalTo: subtitleLabel.trailingAnchor),
             quickActionsStackView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 16),
-            quickActionsStackView.heightAnchor.constraint(equalToConstant: 42),
+            quickActionsStackView.heightAnchor.constraint(equalToConstant: 36),
 
             plannerStackView.leadingAnchor.constraint(equalTo: headerLabel.leadingAnchor),
             plannerStackView.trailingAnchor.constraint(equalTo: subtitleLabel.trailingAnchor),
@@ -222,7 +272,6 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
 
             inputContainerView.leadingAnchor.constraint(equalTo: headerLabel.leadingAnchor),
             inputContainerView.trailingAnchor.constraint(equalTo: subtitleLabel.trailingAnchor),
-            inputContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
 
             inputField.leadingAnchor.constraint(equalTo: inputContainerView.leadingAnchor, constant: 14),
             inputField.topAnchor.constraint(equalTo: inputContainerView.topAnchor, constant: 12),
@@ -331,9 +380,13 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
             button.setTitle("\(item.isDone ? "✓" : "○")  \(item.title)", for: .normal)
             button.setTitleColor(.white, for: .normal)
             button.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+            button.titleLabel?.numberOfLines = 1
+            button.titleLabel?.adjustsFontSizeToFitWidth = true
+            button.titleLabel?.minimumScaleFactor = 0.75
             button.backgroundColor = item.isDone ? UIColor.systemBlue.withAlphaComponent(0.18) : UIColor.white.withAlphaComponent(0.06)
-            button.layer.cornerRadius = 12
+            button.layer.cornerRadius = 10
             button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 12)
+            button.heightAnchor.constraint(equalToConstant: 44).isActive = true
             button.addTarget(self, action: #selector(checklistButtonTapped(_:)), for: .touchUpInside)
             checklistButtonsStackView.addArrangedSubview(button)
         }
