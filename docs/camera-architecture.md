@@ -1,6 +1,6 @@
 # Camera Architecture
 
-這份文件描述 `CameraHuman` 目前的相機頁技術設計，目的是讓後續開發時能先理解現有決策，再決定要不要重構，而不是直接把功能再堆回 [`CameraViewController.swift`](../CameraHuman/CameraViewController.swift)。
+這份文件描述 `CameraHuman` 目前的相機頁技術設計，目的是讓後續開發時能先理解現有決策，再決定要不要重構，而不是直接把功能再堆回 [`CameraViewController.swift`](../CameraHuman/Camera/CameraViewController.swift)。
 
 ## Scope
 
@@ -21,22 +21,50 @@
 
 ## Primary Components
 
-### 1. Camera View Controller
+相機頁的職責已經從單一 `CameraViewController` 拆成「VC 只負責 view 與 callback wiring，所有 AV 互動由獨立 service 持有」的結構。
 
-[`CameraViewController.swift`](../CameraHuman/CameraViewController.swift) 是目前單一拍攝頁的主控制器，負責：
+### 1. Camera Service Layer
 
-- 建立與維護 `AVCaptureSession`
-- 建立 `AVCaptureVideoPreviewLayer`
-- 控制前後鏡頭切換
-- 切換後鏡頭的實體 lens option
-- 啟動 / 停止錄影
-- 更新 HUD
-- 更新音訊電平顯示
-- 接收錄影完成 callback，並把檔案交給 `MediaLibrary`
+- [`CameraSession.swift`](../CameraHuman/Camera/CameraSession.swift)
+  持有 `AVCaptureSession`、`AVCaptureMovieFileOutput`、`sessionQueue`，負責：
+  - 相機 / 麥克風權限請求
+  - 鏡頭枚舉（`availableLensOptions`）與當前選擇
+  - 前後鏡頭切換
+  - capture session 設定與 commit
+  - 提供 `audioMeterConnection` 給 metering
+  - callback：`onConfigured(device, lensTitle)` / `onConfigureFailed(message)` / `onLensesChanged()`
+- [`CameraRecorder.swift`](../CameraHuman/Camera/CameraRecorder.swift)
+  錄影狀態機 + `AVCaptureFileOutputRecordingDelegate`，負責：
+  - 狀態機：`idle / starting / recording / stopping`
+  - 計時 timer
+  - 接 `MediaLibrary.storeRecording` 把成品落地
+  - callback：`onStateChange` / `onTimerTick` / `onStartedFile` / `onSaved` / `onFailed`
+- [`AudioLevelMonitor.swift`](../CameraHuman/Camera/AudioLevelMonitor.swift)
+  Timer 輪詢 `AVCaptureConnection` 的 audio channels，把 power level 正規化成 0~1 + track count 回 callback。
 
-### 2. Camera Settings Store
+### 2. Camera View Controller
 
-[`CameraSettingsStore.swift`](../CameraHuman/CameraSettingsStore.swift) 是拍攝設定的單一來源，使用 `UserDefaults` 保存：
+[`CameraViewController.swift`](../CameraHuman/Camera/CameraViewController.swift) 只負責：
+
+- view hierarchy 組裝（top HUD / bottom HUD / preview / 自訂 view）
+- 把上面三個 service 的 callback 接到 UI 更新
+- HUD chip 文字渲染與 layout 切換（portrait / landscape）
+- Lens 按鈕點擊轉發到 `CameraSession`、錄影鍵點擊轉發到 `CameraRecorder`
+
+VC **不**直接持有任何 `AVCaptureSession` / `AVCaptureMovieFileOutput` / `AVCaptureDevice` 物件，所有 AV state 都從 service 走。
+
+### 3. Camera Custom Views
+
+- [`AspectMaskView.swift`](../CameraHuman/Camera/Views/AspectMaskView.swift)
+  預覽外殼。內含 vignette、aspect mask、構圖框 + 標籤、三分線。掛 `AVCaptureVideoPreviewLayer`。
+- [`AudioMeterCardView.swift`](../CameraHuman/Camera/Views/AudioMeterCardView.swift)
+  音量計卡片：MIC 標籤 + TRACKS + dB + 4 條動態 bar。`update(level:trackCount:audioAuthorized:)` 一次餵完，內部處理顏色分級。
+- [`ToastView.swift`](../CameraHuman/Camera/Views/ToastView.swift)
+  自動淡入 / 等 1.6s / 淡出的提示泡泡。
+
+### 4. Camera Settings Store
+
+[`CameraSettingsStore.swift`](../CameraHuman/Settings/CameraSettingsStore.swift) 是拍攝設定的單一來源，使用 `UserDefaults` 保存：
 
 - `VideoPreset`
 - `AspectRatio`
@@ -45,9 +73,9 @@
 
 設定變更後會送出 `.cameraSettingsDidChange`。
 
-### 3. Media Library
+### 5. Media Library
 
-[`MediaLibrary.swift`](../CameraHuman/MediaLibrary.swift) 處理錄影檔實際落地：
+[`MediaLibrary.swift`](../CameraHuman/Media/MediaLibrary.swift) 處理錄影檔實際落地：
 
 - 從暫存檔移入 `Documents/Recordings`
 - 建立素材 metadata
@@ -56,9 +84,9 @@
 - 更新素材註記
 - 在 `4:3` 模式下輸出裁切後的影片
 
-### 4. Planner Store
+### 6. Planner Store
 
-[`ShotPlannerStore.swift`](../CameraHuman/ShotPlannerStore.swift) 雖然不是相機核心，但現在已經跟拍攝流程有連動：
+[`ShotPlannerStore.swift`](../CameraHuman/Planner/ShotPlannerStore.swift) 雖然不是相機核心，但現在已經跟拍攝流程有連動：
 
 - 保存 shot checklist
 - 保存拍攝備忘
@@ -95,7 +123,7 @@
 
 ## Threading Model
 
-目前 session 相關工作使用 `sessionQueue`，避免在主緒直接做昂貴的相機設定。
+`sessionQueue` 由 `CameraSession` 持有（`com.camerahuman.capture-session`），所有改動 capture session 的工作都跑在這條 queue 上。`CameraRecorder` 透過 `session.queue.async` 共用同一條 queue 做 start/stop recording，避免兩個 service 各自維護 queue 造成同步問題。
 
 ### 原則
 
@@ -117,7 +145,7 @@
 
 ### 現在的鏡頭模型
 
-`LensMode` 目前只代表實體鏡頭類型，不代表拍攝風格：
+`CameraSession.LensMode` 目前只代表實體鏡頭類型，不代表拍攝風格：
 
 - `ultraWide`
 - `wide`
@@ -153,39 +181,38 @@
 
 ## Recording Flow
 
+錄影狀態機與 file output delegate 都在 `CameraRecorder` 內部，VC 只透過 callback 收事件。
+
 ### 開始錄影
 
-使用者點底部錄影鍵後：
-
-1. 檢查目前 `recordingState`
-2. 若為 `idle`，進入 `startRecording()`
-3. 建立暫存輸出 URL
-4. 由 `AVCaptureMovieFileOutput` 開始錄影
-5. `didStartRecordingTo` callback 後：
-   - 狀態切到 `recording`
-   - 啟動錄影 timer
-   - 更新 HUD
+1. 使用者點錄影鍵 → VC 呼叫 `recorder.start(interfaceOrientation:)`
+2. `CameraRecorder` 檢查當前 state 是否為 `idle`、session 有相機權限、`movieOutput` 沒在錄
+3. state 切到 `starting`，`onStateChange` 回 callback 給 VC 更新按鈕外觀
+4. 在 `session.queue` 上建立暫存輸出 URL，呼叫 `movieOutput.startRecording(to:recordingDelegate:)`
+5. delegate 的 `didStartRecordingTo` 回到 main thread 後：
+   - state 切到 `recording`，`onStateChange` 觸發 UI
+   - 啟動 1Hz `onTimerTick` callback 給 VC 更新 HUD timer
+   - `onStartedFile(URL)` 給 VC 顯示「錄影中：檔名」
 
 ### 停止錄影
 
-1. 使用者再次點錄影鍵
-2. 呼叫 `stopRecording()`
-3. `didFinishRecordingTo` callback 後：
-   - 停止 timer
-   - 若成功，交由 `MediaLibrary.storeRecording(from:aspectRatio:)`
-   - 若目前設定為 `4:3`，會先做輸出裁切
-   - 存檔成功後顯示 toast
+1. 使用者再次點錄影鍵 → VC 呼叫 `recorder.stop()`
+2. state 切到 `stopping`、`onStateChange` 觸發 UI
+3. delegate 的 `didFinishRecordingTo` 回到 main thread 後：
+   - 停 timer，state 回 `idle`
+   - 成功：在背景 queue 呼叫 `MediaLibrary.storeRecording(from:aspectRatio:)`，4:3 模式會在這裡做輸出裁切；完成後 `onSaved(MediaRecording)` 觸發 toast
+   - 失敗：`onFailed(message)` 給 VC 顯示
 
 ### 錄影狀態
 
-目前使用 `RecordingState` 管控：
+`CameraRecorder.State` 列舉：
 
 - `idle`
 - `starting`
 - `recording`
 - `stopping`
 
-這能避免使用者在開始 / 結束的過渡期重複點擊錄影鍵。
+`starting` / `stopping` 過渡期間，VC 把錄影鍵 disabled，避免重複點擊。
 
 ## Preview Aspect Strategy
 
@@ -193,18 +220,15 @@
 
 ### 1. 預覽構圖層
 
-相機預覽上有：
+`AspectMaskView` 內部包：
 
-- `aspectMaskTopView`
-- `aspectMaskBottomView`
-- `aspectFrameView`
-- `aspectFrameLabel`
+- vignette
+- aspect mask top / bottom
+- 構圖框
+- 比例標籤
+- 三分線（rule of thirds）
 
-這些元件提供：
-
-- 上下遮罩
-- 實際構圖框
-- 當前比例標示
+VC 透過 `previewView.setAspectRatio(_:)` / `previewView.setGuidesVisible(_:)` 切換顯示，不再直接動內部 subviews。
 
 ### 2. 輸出裁切層
 
@@ -263,7 +287,7 @@
 
 ## Audio Meter Strategy
 
-目前音訊監看使用 capture connection 的 `audioChannels` 讀取平均 power level，再轉成 0...1 的 normalized level。
+`AudioLevelMonitor` 用 0.12s timer 輪詢 `AVCaptureConnection` 的 `audioChannels`，取最大平均 power level，轉成 0~1 normalized level + track count，回 callback 給 VC。VC 再把值轉發給 `AudioMeterCardView.update(level:trackCount:audioAuthorized:)`，由 view 內部處理顏色分級與 bar 高度動畫。
 
 ### 顏色規則
 
@@ -292,26 +316,21 @@
 
 1. `CameraSettingsStore` persist 到 `UserDefaults`
 2. 發送 `.cameraSettingsDidChange`
-3. `CameraViewController` 收到後更新：
-   - guide visibility
-   - aspect mask
-   - capture session
-   - lens options
-
-若正在錄影中：
-
-- 不會立刻整個重建 capture session
-- 先顯示「部份設定會在結束目前錄影後套用」
+3. `CameraViewController` 收到後：
+   - 透過 `AspectMaskView` 更新 guide visibility 與 aspect 框
+   - 若 recorder 為 `idle`，呼叫 `session.resetPositionFromSettings()` + `session.configure(...)` 重建 session
+   - 若正在錄影，先顯示「部份設定會在結束目前錄影後套用」，不打斷當前錄影
 
 ### Camera -> Media
 
 錄影完成後：
 
-1. `CameraViewController`
-2. `MediaLibrary.storeRecording(...)`
-3. 儲存到 `Documents/Recordings`
+1. `CameraRecorder.didFinishRecordingTo` delegate
+2. 在 background queue 呼叫 `MediaLibrary.storeRecording(...)`
+3. 儲存到 `Documents/Recordings`，4:3 模式做輸出裁切
 4. 發送 `.mediaLibraryDidChange`
 5. `MediaViewController` 刷新列表
+6. `CameraRecorder.onSaved` 回 main thread 給 VC 顯示 toast
 
 ### Media -> Chat
 
@@ -326,30 +345,27 @@
 
 ## Known Technical Debt
 
-- `CameraViewController` 仍偏大，後續應拆出：
-  - capture session coordinator
-  - HUD view model
-  - audio metering adapter
 - `4:3` 目前是錄後裁切，不是完整從 capture preset 到 framing pipeline 的一致設計
-- `IRIS` 現在仍是固定顯示，因為多數 iPhone 無實體可變光圈；若要更準確，可改成裝置能力導向的顯示策略
+- `IRIS` 顯示走 `device.lensAperture`，多數 iPhone 是 fixed 因此會顯示 `FIXED`；若要更準確可改成裝置能力導向的顯示策略
 - `Chat` 與 `Media` 的 planner 連動目前是單一 linked clip，不是多素材 shot mapping
+- `CameraViewController` 仍有 ~700 行的 view 組裝與 chip 渲染邏輯；可再抽 `TopHUDView` / `BottomHUDView` / 把 chip 渲染抽成獨立 helper，但價值低於前面已做的 service 拆分
 
 ## Recommended Next Refactors
 
 ### Short Term
 
-- 移除或重做 `LaunchScreen.storyboard`
 - 真機驗證 `4:3` 裁切與前後鏡頭輸出方向
 - 補更多錄影成功 / 失敗狀態提示
+- 把 `Chat` 接上真實 AI（已有 `ChatEngine` 協定可換實作）
 
 ### Mid Term
 
-- 把 capture session 管理從 view controller 拆出去
 - 把 HUD 顯示值改成更清楚的狀態模型
 - 讓 `Media` 支援專案、標籤或素材分類
+- 把 `TopHUDView` / `BottomHUDView` 拆出，VC 再瘦一輪
 
 ### Long Term
 
 - 加入更完整的手動控制
 - 加入多軌音訊策略
-- 規劃真正的 AI / 雲端 `Chat` 工作流
+- 規劃真正的 AI / 雲端 `Chat` 工作流（含 system prompt 注入 app 狀態 + tool calling）

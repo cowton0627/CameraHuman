@@ -17,12 +17,10 @@
 
 - 主 app 是 `UIKit`
 - 相機與錄影核心依賴 `AVFoundation`
-- 主入口是 `SceneDelegate + RootTabBarController`
-- `Camera` 是目前主要功能頁
+- 主入口是 `SceneDelegate + RootTabBarController`（自製 dock，不是 `UITabBar` 預設外觀）
+- `Camera` 是目前主要功能頁，已拆成 `CameraSession` / `CameraRecorder` / `AudioLevelMonitor` 三個 service + 多個 custom view
 - `Media / Chat / Settings` 已經接進同一個拍攝工作流
-- 本機 `xcodebuild` 目前已知可能卡在 `LaunchScreen.storyboard` 的 iOS platform 問題
-
-所以開發流程不能只看 Swift 編譯結果，也要看本機 build 環境。
+- `project.pbxproj` 採用 Xcode 16 同步資料夾，加新檔到對應子資料夾即自動納入 build，不必手動編輯 pbxproj
 
 ## Core Workflow
 
@@ -40,15 +38,17 @@
 
 如果是相機功能，先看：
 
-- [`CameraViewController.swift`](../CameraHuman/CameraViewController.swift)
-- [`CameraSettingsStore.swift`](../CameraHuman/CameraSettingsStore.swift)
-- [`MediaLibrary.swift`](../CameraHuman/MediaLibrary.swift)
+- [`CameraViewController.swift`](../CameraHuman/Camera/CameraViewController.swift) — view + callback wiring
+- [`CameraSession.swift`](../CameraHuman/Camera/CameraSession.swift) — capture session、鏡頭、權限
+- [`CameraRecorder.swift`](../CameraHuman/Camera/CameraRecorder.swift) — 錄影狀態機
+- [`CameraSettingsStore.swift`](../CameraHuman/Settings/CameraSettingsStore.swift)
+- [`MediaLibrary.swift`](../CameraHuman/Media/MediaLibrary.swift)
 
 如果是 app 導航或啟動問題，另外看：
 
-- [`RootTabBarController.swift`](../CameraHuman/RootTabBarController.swift)
-- [`SceneDelegate.swift`](../CameraHuman/SceneDelegate.swift)
-- [`Info.plist`](../CameraHuman/Info.plist)
+- [`RootTabBarController.swift`](../CameraHuman/App/RootTabBarController.swift)
+- [`SceneDelegate.swift`](../CameraHuman/App/SceneDelegate.swift)
+- [`Info.plist`](../CameraHuman/Resources/Info.plist)
 
 ### 2. Check Git Before Editing
 
@@ -100,22 +100,18 @@ git status --short
 
 ### 5. Build Verification
 
-改完後，先跑固定 build 指令，不要每次換花樣。
+改完後，先跑固定 build 指令，不要每次換花樣。模擬器 build：
 
 ```bash
-xcodebuild -scheme CameraHuman -project CameraHuman.xcodeproj -destination 'generic/platform=iOS' -derivedDataPath /tmp/CameraHumanDerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > /tmp/camerahuman-build.log 2>&1
+xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
+  -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+  -configuration Debug build > /tmp/camerahuman-build.log 2>&1
 ```
 
 再查 log：
 
 ```bash
 rg -n "error:|warning:" /tmp/camerahuman-build.log
-```
-
-如果是相機頁調整，建議加查：
-
-```bash
-rg -n "CameraViewController.swift:.*error:|MediaLibrary.swift:.*error:|MediaViewController.swift:.*error:|ChatViewController.swift:.*error:|SettingsViewController.swift:.*error:|error:" /tmp/camerahuman-build.log
 ```
 
 ### 6. Interpret Build Correctly
@@ -136,12 +132,11 @@ rg -n "CameraViewController.swift:.*error:|MediaLibrary.swift:.*error:|MediaView
 
 這類要明確說是本機環境問題，不要誤判成程式錯：
 
-- `LaunchScreen.storyboard`
-- `ibtool`
-- `iOS 17.2 Platform Not Installed`
+- `iOS Platform Not Installed`（缺對應 SDK）
 - simulator service / platform runtime 缺失
+- `xcrun simctl` 找不到指定 device UDID
 
-現在這個 repo 已知最常見的就是後者。
+`LaunchScreen.storyboard` 之前因為沒在 `Info.plist` 註冊 `UILaunchStoryboardName` 會被 letterbox，這個已在當前版本修正。
 
 ## Real Device Verification
 
@@ -297,6 +292,8 @@ git status --short
 
 從開發效率與風險管理來看，接下來最值得做的是：
 
-1. 清掉 `LaunchScreen.storyboard` 的本機 build 阻塞
-2. 做一輪真機驗證，專查 `4:3`、前後鏡頭與錄影輸出方向
-3. 逐步把 `CameraViewController` 拆出更清楚的 coordinator / state layer
+1. 做一輪真機驗證，專查 `4:3`、前後鏡頭、錄影輸出方向、實機 IRIS / FPS / SHUTTER 值是否合理
+2. 把 `Chat` 接上真實 AI（已有 `ChatEngine` 協定預留 swap 點）
+3. 擴充 `Media` 的素材分類、搜尋、標籤
+
+`CameraViewController` 已經做過一輪 service 拆分（`CameraSession` / `CameraRecorder` / `AudioLevelMonitor` + `AspectMaskView` / `AudioMeterCardView` / `ToastView`）。下一輪如果還要繼續瘦 VC，目標應該是 `TopHUDView` / `BottomHUDView` 抽出，但價值已遠低於前面幾刀，不急。

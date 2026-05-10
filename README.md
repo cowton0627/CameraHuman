@@ -1,124 +1,132 @@
 # CameraHuman
 
-`CameraHuman` 是一個以 `UIKit + AVFoundation` 為主的 iOS 拍攝工具原型。現在的主軸不是單純相機 demo，而是把拍攝、音訊監看、素材管理、拍攝規劃整成同一個工作流。
+`CameraHuman` 是一個以 `UIKit + AVFoundation` 為主的 iOS 拍攝工具原型。主軸不是單純相機 demo，而是把拍攝、音訊監看、素材管理、拍攝規劃整成同一個工作流。
 
 ## Current App Structure
 
-底部 `Tab Bar` 目前分成四頁：
+底部自製 dock（不是 `UITabBar` 預設樣式）分成四頁：
 
 - `Camera`
-  單一拍攝頁。整合相機預覽、錄影、鏡頭切換、音訊電平監看、格式資訊與技術 HUD。
+  拍攝頁。整合相機預覽、錄影、鏡頭切換、音訊電平監看、格式資訊與技術 HUD。
 - `Media`
-  顯示已錄製素材，支援播放、刪除、素材註記，以及把某支素材 link 到拍攝 planner。
+  已錄製素材列表，支援播放、滑動刪除、素材註記，以及把某支素材 link 到 planner。
 - `Chat`
-  本地拍攝助理頁。可查看目前設定、最近素材、shot checklist、備忘與 action items。
+  拍攝助理頁。本地 keyword 對話引擎 + shot checklist + 備忘 + action items。
 - `Settings`
-  管理拍攝偏好，例如錄影畫質、比例、啟動鏡頭與格線。
+  拍攝偏好：錄影畫質、比例、啟動鏡頭、格線。
 
 ## Implemented Features
 
 ### Camera
 
-- 使用 `AVCaptureSession` 同時接上 video input、audio input、`AVCaptureMovieFileOutput`
-- 前後鏡頭切換
-- 後鏡頭依實際硬體顯示可用鏡頭類型，不把 `portrait` 當成假鏡頭模式
+- 服務層拆分：
+  - `CameraSession` 管 `AVCaptureSession`、鏡頭枚舉、前後鏡頭切換、權限請求
+  - `CameraRecorder` 管錄影狀態機（idle / starting / recording / stopping）+ `AVCaptureFileOutputRecordingDelegate` + 計時器
+  - `AudioLevelMonitor` 用 timer 輪詢 `AVCaptureConnection` 的 audio channels
+- 後鏡頭依硬體實際支援列出 0.5x / 1x / 3x，不做假鏡頭
+- 前鏡頭只暴露單一 front mode，不硬做多焦段假象
 - 上方拍攝 HUD
-  - 格式，例如 `HD` / `FHD`
-  - 比例，例如 `16:9` / `4:3`
-  - 錄影時間與 `REC` 狀態
-- 技術資訊 HUD
-  - `LENS`
-  - `FPS`
-  - `SHUTTER`
-  - `IRIS`
-  - `ISO`
-  - `WB`
-- 底部錄影鍵
-- 右下角音訊監看
-  - 正常範圍：綠色
-  - 接近上限：黃色
-  - 爆音區：紅色
-- 錄影完成後會顯示簡短 toast
-- `16:9` / `4:3` 預覽構圖框與遮罩
+  - 第一排：`FORMAT` / `FRAME` / `TIME`（錄影中變 `REC`）
+  - 第二排：`LENS` / `FPS` / `SHUTTER` / `IRIS` / `ISO` / `WB`
+- 錄影鍵 + 狀態機，過渡期間自動禁用避免重複點擊
+- 即時音量監看（綠 / 黃 / 紅三段顏色 + dB 數值）
+- `i` 診斷資訊（5 行精簡狀態 + 可複製）
+- `16:9` / `4:3` 構圖框與遮罩
+- 錄影完成 toast
+- 最近一次錄影刪除捷徑
 
 ### Media
 
-- 錄影檔儲存到 app 的 `Documents/Recordings`
-- 列表顯示建立時間與檔案大小
-- 可播放 `.mov`
-- 可刪除素材
-- 可編輯素材註記
-- 可把素材 link 到 planner
+- 錄影檔儲存到 `Documents/Recordings`
+- 列表顯示檔名 + 建立時間 + 檔案大小 + 註記
+- 點開可播放 `.mov`
+- 滑動 row 露出 Delete / Note / Link
+- `4:3` 模式錄影在儲存時做輸出裁切（`MediaLibrary` 內）
 
 ### Chat
 
-- 顯示目前拍攝設定摘要
-- 顯示最近素材摘要
-- 內建 shot checklist
-- 可編輯拍攝備忘
-- 可保存 action items
-- 顯示目前 link 的素材
+- 三顆 quick action button：目前設定 / 最近素材 / 下一步建議
+- Planner 卡片：shot checklist（44pt 觸控區）/ 備忘 / 儲存 / linked clip / action items
+- 對話引擎走 `ChatEngine` 協定，目前實作為本地 keyword 比對；未來換 AI 只要換實作
+- 鍵盤避讓：點空白 / 拖列表 / Return key 都會收下鍵盤
 
 ### Settings
 
-- `HD / FHD`
-- `16:9 / 4:3`
+- `HD` / `FHD`
+- `16:9` / `4:3`
 - 預設前鏡頭 / 後鏡頭
 - 顯示格線
 
-## Important Files
+## Project Structure
 
-- [`CameraHuman/CameraViewController.swift`](./CameraHuman/CameraViewController.swift)
-  主拍攝頁與 `AVCaptureSession` 控制。
-- [`CameraHuman/MediaLibrary.swift`](./CameraHuman/MediaLibrary.swift)
-  素材儲存、列出、刪除、註記、`4:3` 輸出裁切。
-- [`CameraHuman/MediaViewController.swift`](./CameraHuman/MediaViewController.swift)
-  素材列表與播放器入口。
-- [`CameraHuman/ChatViewController.swift`](./CameraHuman/ChatViewController.swift)
-  拍攝助理與 planner UI。
-- [`CameraHuman/ShotPlannerStore.swift`](./CameraHuman/ShotPlannerStore.swift)
-  checklist、備忘、action items、linked clip 的本地儲存。
-- [`CameraHuman/CameraSettingsStore.swift`](./CameraHuman/CameraSettingsStore.swift)
-  拍攝設定的 `UserDefaults` 儲存與通知。
-- [`CameraHuman/SettingsViewController.swift`](./CameraHuman/SettingsViewController.swift)
-  設定頁 UI。
-- [`CameraHuman/RootTabBarController.swift`](./CameraHuman/RootTabBarController.swift)
-  app 的四個主要 tab 入口。
+`project.pbxproj` 採用 Xcode 16 同步資料夾（`PBXFileSystemSynchronizedRootGroup`），加新檔到對應資料夾就會自動納入 build，不必手動編輯 `pbxproj`。
+
+```
+CameraHuman/
+├── App/                                   入口
+│   ├── AppDelegate.swift
+│   ├── SceneDelegate.swift
+│   └── RootTabBarController.swift         自製 dock + 自動切換 portrait/landscape
+├── Camera/
+│   ├── CameraViewController.swift         view 組裝 + service callback wiring
+│   ├── CameraSession.swift                AVCaptureSession + 鏡頭管理
+│   ├── CameraRecorder.swift               錄影狀態機 + delegate
+│   ├── AudioLevelMonitor.swift            音量輪詢
+│   ├── CameraDiagnostics.swift            i 診斷報告
+│   ├── HUDFormatters.swift                AVCaptureDevice → 顯示文字
+│   ├── AVCaptureVideoOrientation+Init.swift
+│   └── Views/
+│       ├── AspectMaskView.swift           預覽外殼 + 構圖框 + 三分線
+│       ├── AudioMeterCardView.swift       音量計卡片
+│       └── ToastView.swift                提示泡泡
+├── Chat/
+│   ├── ChatViewController.swift           UI 組裝 + 訊息列表
+│   ├── ChatEngine.swift                   協定 + `KeywordChatEngine`
+│   └── Views/PlannerCardView.swift        checklist / notes / action items 卡片
+├── Media/
+│   ├── MediaViewController.swift
+│   └── MediaLibrary.swift                 儲存 + metadata + 4:3 裁切
+├── Settings/
+│   ├── SettingsViewController.swift
+│   └── CameraSettingsStore.swift          UserDefaults persist + 變更通知
+├── Planner/
+│   └── ShotPlannerStore.swift             checklist / notes / action items / linked clip
+├── Shared/
+│   └── KeyboardObserver.swift             鍵盤升降監聽，可重用
+└── Resources/                             Assets.xcassets / Info.plist / Base.lproj / .xcdatamodeld
+scripts/
+└── generate_app_icon.swift                用 CoreGraphics 產 1024×1024 AppIcon
+```
 
 ## Technical Docs
 
 - [`docs/camera-architecture.md`](./docs/camera-architecture.md)
-  相機頁的 capture session、鏡頭策略、錄影流程、HUD 與資料流設計。
+  相機頁的 service 層、capture session、鏡頭策略、錄影流程、HUD 與資料流設計。
 - [`docs/development-workflow.md`](./docs/development-workflow.md)
   這個 repo 的實際開發、build 驗證、真機測試與 git 工作流程。
 
-## Build Notes
+## Build
 
-目前 app 走 `SceneDelegate + RootTabBarController`，不再依賴 `Main.storyboard` 作為主要進入點。
-
-本機若使用：
+模擬器：
 
 ```bash
-xcodebuild -scheme CameraHuman -project CameraHuman.xcodeproj -destination 'generic/platform=iOS' -derivedDataPath /tmp/CameraHumanDerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
+  -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+  -configuration Debug build
 ```
 
-目前已知阻塞不是 Swift 編譯錯誤，而是：
-
-- `LaunchScreen.storyboard`
-- `iOS 17.2 Platform Not Installed`
-
-也就是說，現階段若 build 卡住，先檢查本機 Xcode / iOS platform 安裝狀態。
+最低支援 iOS 13.0。`Info.plist` 內含 `NSCameraUsageDescription` / `NSMicrophoneUsageDescription` / `UILaunchStoryboardName`，啟動畫面已修，App 不再被 letterbox 在螢幕中央。
 
 ## Current Limitations
 
-- `4:3` 目前是以預覽構圖框與輸出裁切為主，仍需真機再驗證不同方向與不同鏡頭的結果。
-- 音訊監看目前是單一 capture session 的 level meter，不是完整多軌 mixer。
-- `Chat` 目前是本地 planner / assistant，不是接外部 AI 或後端服務。
-- `Media` 現在是單層素材列表，還沒有專案、資料夾或標籤系統。
+- `4:3` 目前是錄後裁切，仍需真機驗證不同方向與不同鏡頭的結果一致。
+- 音訊監看是單一 capture connection 的 level meter，不是完整多軌 mixer。
+- `Chat` 還是本地 keyword 引擎；架構已用 `ChatEngine` 協定預留 swap 點，但未接外部 AI。
+- `Media` 是單層素材列表，沒有專案、資料夾或標籤系統。
 
 ## Next Recommended Work
 
-- 移除或重做 `LaunchScreen.storyboard`，把本機 build 噪音先清掉
-- 在真機上驗證前後鏡頭、`16:9 / 4:3`、錄影方向與裁切結果
-- 擴充 `Media` 的素材分類與搜尋
-- 把 `Chat` 的 planner 與素材管理做更深整合，例如 shot list 對應多支 clip
+- 在真機上驗證前後鏡頭、`16:9 / 4:3`、錄影方向與裁切結果（最高優先）
+- 把 `Chat` 接上真實 AI——候選：Apple Foundation Models（裝置端、免 key、需 iOS 18.1+ Apple Intelligence 機型）、Gemini Flash 免費 tier、Claude Haiku
+- 擴充 `Media` 的素材分類、搜尋與標籤
+- 把 `Chat` 的 planner 與素材管理做更深整合（例如 shot list 對應多支 clip，而不是只有單一 linked clip）
