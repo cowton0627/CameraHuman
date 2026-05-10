@@ -880,11 +880,11 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         updatePrimaryHUD()
         replaceTechnicalChips(with: [
             "LENS \(lensTitle)",
-            "FPS \(frameRateText(for: device))",
-            "SHUTTER \(shutterText(for: device))",
-            "IRIS \(irisText(for: device))",
+            "FPS \(HUDFormatters.frameRate(for: device))",
+            "SHUTTER \(HUDFormatters.shutter(for: device))",
+            "IRIS \(HUDFormatters.iris(for: device))",
             "ISO \(String(format: "%.0f", device.iso))",
-            "WB \(whiteBalanceText(for: device))"
+            "WB \(HUDFormatters.whiteBalance(for: device))"
         ])
 
         let positionText = currentPosition == .front ? "FRONT" : "BACK"
@@ -1096,60 +1096,17 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         settings.aspectRatio.displayTitle
     }
 
-    private func frameRateText(for device: AVCaptureDevice) -> String {
-        let maxFrameRate = device.activeFormat.videoSupportedFrameRateRanges.map(\.maxFrameRate).max() ?? 0
-        return String(format: "%.0f", maxFrameRate)
-    }
-
-    private func shutterText(for device: AVCaptureDevice) -> String {
-        let duration = CMTimeGetSeconds(device.exposureDuration)
-        guard duration > 0 else { return "AUTO" }
-        let denominator = max(1, Int(round(1 / duration)))
-        return "1/\(denominator)"
-    }
-
-    private func irisText(for device: AVCaptureDevice) -> String {
-        if device.lensAperture > 0 {
-            return String(format: "F%.1f", device.lensAperture)
-        }
-        return "FIXED"
-    }
-
-    private func whiteBalanceText(for device: AVCaptureDevice) -> String {
-        switch device.whiteBalanceMode {
-        case .locked:
-            return "LOCK"
-        case .autoWhiteBalance, .continuousAutoWhiteBalance:
-            return "AUTO"
-        @unknown default:
-            return "--"
-        }
-    }
-
-    private func buildCameraReport() -> String {
-        let position = currentPosition == .front ? "FRONT" : "BACK"
-        let lens = currentLensOption?.title ?? "--"
-        let resolution: String
-        if let device = currentLensOption?.device {
-            let d = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
-            resolution = "\(d.width)×\(d.height)"
-        } else {
-            resolution = "--"
-        }
-        let micState = audioAuthorized ? "ON" : "OFF"
-        let trackCount = max(currentAudioTrackCount, audioAuthorized ? 1 : 0)
-
-        return [
-            "Recording  \(recordingStateLabel())",
-            "Quality    \(qualityText()) · \(aspectRatioText())",
-            "Lens       \(lens) · \(position)",
-            "Resolution \(resolution)",
-            "Mic        \(micState) · \(trackCount) track\(trackCount == 1 ? "" : "s")"
-        ].joined(separator: "\n")
-    }
-
     private func presentCameraDiagnostics() {
-        let report = buildCameraReport()
+        let report = CameraDiagnostics.report(from: CameraDiagnostics.Inputs(
+            recordingState: recordingStateLabel(),
+            quality: qualityText(),
+            aspect: aspectRatioText(),
+            lensTitle: currentLensOption?.title,
+            position: currentPosition,
+            device: currentLensOption?.device,
+            audioAuthorized: audioAuthorized,
+            audioTrackCount: currentAudioTrackCount
+        ))
         let alertController = UIAlertController(title: "Camera Diagnostics", message: report, preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "Close", style: .cancel))
         alertController.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
