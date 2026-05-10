@@ -1,0 +1,45 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode 個人狀態（不該共享）
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+
+# Build / 衍生產物
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# CocoaPods（目前沒用，先預留）
+Pods/
+
+# Carthage（目前沒用，先預留）
+Carthage/Build/
+
+# fastlane（目前沒用，先預留）
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# IDE / 編輯器
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
