@@ -3,46 +3,26 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 71;
 	objects = {
-
-/* Begin PBXBuildFile section */
-		91C4CA6E2BA154550058B34B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA6D2BA154550058B34B /* AppDelegate.swift */; };
-		91C4CA702BA154550058B34B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA6F2BA154550058B34B /* SceneDelegate.swift */; };
-		91C4CA722BA154550058B34B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA712BA154550058B34B /* ViewController.swift */; };
-		91C4CA782BA154550058B34B /* CameraHuman.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA762BA154550058B34B /* CameraHuman.xcdatamodeld */; };
-		91C4CA7A2BA154570058B34B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 91C4CA792BA154570058B34B /* Assets.xcassets */; };
-		91C4CA852BA1557F0058B34B /* SoundDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA842BA1557F0058B34B /* SoundDetector.swift */; };
-		91C4CA872BA1557F0058B34B /* RootTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA862BA1557F0058B34B /* RootTabBarController.swift */; };
-		91C4CA892BA1557F0058B34B /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA882BA1557F0058B34B /* CameraViewController.swift */; };
-		91C4CA8B2BA1557F0058B34B /* SoundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA8A2BA1557F0058B34B /* SoundViewController.swift */; };
-		91C4CA8D2BA1557F0058B34B /* CameraSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA8C2BA1557F0058B34B /* CameraSettingsStore.swift */; };
-		91C4CA8F2BA1557F0058B34B /* MediaLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA8E2BA1557F0058B34B /* MediaLibrary.swift */; };
-		91C4CA912BA1557F0058B34B /* MediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA902BA1557F0058B34B /* MediaViewController.swift */; };
-		91C4CA932BA1557F0058B34B /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA922BA1557F0058B34B /* SettingsViewController.swift */; };
-		91C4CA952BA1557F0058B34B /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA942BA1557F0058B34B /* ChatViewController.swift */; };
-		91C4CA972BA1557F0058B34B /* ShotPlannerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C4CA962BA1557F0058B34B /* ShotPlannerStore.swift */; };
-/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		91C4CA6A2BA154550058B34B /* CameraHuman.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraHuman.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		91C4CA6D2BA154550058B34B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		91C4CA6F2BA154550058B34B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		91C4CA712BA154550058B34B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		91C4CA772BA154550058B34B /* CameraHuman.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CameraHuman.xcdatamodel; sourceTree = "<group>"; };
-		91C4CA792BA154570058B34B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		91C4CA7E2BA154570058B34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		91C4CA842BA1557F0058B34B /* SoundDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundDetector.swift; sourceTree = "<group>"; };
-		91C4CA862BA1557F0058B34B /* RootTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabBarController.swift; sourceTree = "<group>"; };
-		91C4CA882BA1557F0058B34B /* CameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
-		91C4CA8A2BA1557F0058B34B /* SoundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundViewController.swift; sourceTree = "<group>"; };
-		91C4CA8C2BA1557F0058B34B /* CameraSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSettingsStore.swift; sourceTree = "<group>"; };
-		91C4CA8E2BA1557F0058B34B /* MediaLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLibrary.swift; sourceTree = "<group>"; };
-		91C4CA902BA1557F0058B34B /* MediaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViewController.swift; sourceTree = "<group>"; };
-		91C4CA922BA1557F0058B34B /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
-		91C4CA942BA1557F0058B34B /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
-		91C4CA962BA1557F0058B34B /* ShotPlannerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotPlannerStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		91C4CAA02BA154570058B34B /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/Info.plist,
+			);
+			target = 91C4CA692BA154550058B34B /* CameraHuman */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		91C4CA6C2BA154550058B34B /* CameraHuman */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (91C4CAA02BA154570058B34B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CameraHuman; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		91C4CA672BA154550058B34B /* Frameworks */ = {
@@ -71,29 +51,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		91C4CA6C2BA154550058B34B /* CameraHuman */ = {
-			isa = PBXGroup;
-			children = (
-				91C4CA6D2BA154550058B34B /* AppDelegate.swift */,
-				91C4CA6F2BA154550058B34B /* SceneDelegate.swift */,
-				91C4CA712BA154550058B34B /* ViewController.swift */,
-				91C4CA842BA1557F0058B34B /* SoundDetector.swift */,
-				91C4CA8C2BA1557F0058B34B /* CameraSettingsStore.swift */,
-				91C4CA8E2BA1557F0058B34B /* MediaLibrary.swift */,
-				91C4CA862BA1557F0058B34B /* RootTabBarController.swift */,
-				91C4CA882BA1557F0058B34B /* CameraViewController.swift */,
-				91C4CA942BA1557F0058B34B /* ChatViewController.swift */,
-				91C4CA962BA1557F0058B34B /* ShotPlannerStore.swift */,
-				91C4CA902BA1557F0058B34B /* MediaViewController.swift */,
-				91C4CA922BA1557F0058B34B /* SettingsViewController.swift */,
-				91C4CA8A2BA1557F0058B34B /* SoundViewController.swift */,
-				91C4CA792BA154570058B34B /* Assets.xcassets */,
-				91C4CA7E2BA154570058B34B /* Info.plist */,
-				91C4CA762BA154550058B34B /* CameraHuman.xcdatamodeld */,
-			);
-			path = CameraHuman;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -108,6 +65,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				91C4CA6C2BA154550058B34B /* CameraHuman */,
 			);
 			name = CameraHuman;
 			productName = CameraHuman;
@@ -130,7 +90,7 @@
 				};
 			};
 			buildConfigurationList = 91C4CA652BA154550058B34B /* Build configuration list for PBXProject "CameraHuman" */;
-			compatibilityVersion = "Xcode 14.0";
+			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -152,7 +112,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				91C4CA7A2BA154570058B34B /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -163,20 +122,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				91C4CA892BA1557F0058B34B /* CameraViewController.swift in Sources */,
-				91C4CA8D2BA1557F0058B34B /* CameraSettingsStore.swift in Sources */,
-				91C4CA8F2BA1557F0058B34B /* MediaLibrary.swift in Sources */,
-				91C4CA912BA1557F0058B34B /* MediaViewController.swift in Sources */,
-				91C4CA952BA1557F0058B34B /* ChatViewController.swift in Sources */,
-				91C4CA972BA1557F0058B34B /* ShotPlannerStore.swift in Sources */,
-				91C4CA8B2BA1557F0058B34B /* SoundViewController.swift in Sources */,
-				91C4CA722BA154550058B34B /* ViewController.swift in Sources */,
-				91C4CA6E2BA154550058B34B /* AppDelegate.swift in Sources */,
-				91C4CA872BA1557F0058B34B /* RootTabBarController.swift in Sources */,
-				91C4CA932BA1557F0058B34B /* SettingsViewController.swift in Sources */,
-				91C4CA852BA1557F0058B34B /* SoundDetector.swift in Sources */,
-				91C4CA782BA154550058B34B /* CameraHuman.xcdatamodeld in Sources */,
-				91C4CA702BA154550058B34B /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,7 +256,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VWDLUM96X8;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = CameraHuman/Info.plist;
+				INFOPLIST_FILE = CameraHuman/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -338,7 +283,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VWDLUM96X8;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = CameraHuman/Info.plist;
+				INFOPLIST_FILE = CameraHuman/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -378,19 +323,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		91C4CA762BA154550058B34B /* CameraHuman.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				91C4CA772BA154550058B34B /* CameraHuman.xcdatamodel */,
-			);
-			currentVersion = 91C4CA772BA154550058B34B /* CameraHuman.xcdatamodel */;
-			path = CameraHuman.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 91C4CA622BA154550058B34B /* Project object */;
 }
