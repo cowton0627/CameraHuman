@@ -343,29 +343,6 @@ VC 透過 `previewView.setAspectRatio(_:)` / `previewView.setGuidesVisible(_:)` 
 3. `ChatViewController` 更新 linked clip 顯示
 4. `MediaViewController` 也同步刷新 subtitle
 
-## Known Technical Debt
+## Roadmap
 
-- `4:3` 目前是錄後裁切，不是完整從 capture preset 到 framing pipeline 的一致設計
-- `IRIS` 顯示走 `device.lensAperture`，多數 iPhone 是 fixed 因此會顯示 `FIXED`；若要更準確可改成裝置能力導向的顯示策略
-- `Chat` 與 `Media` 的 planner 連動目前是單一 linked clip，不是多素材 shot mapping
-- `CameraViewController` 仍有 ~700 行的 view 組裝與 chip 渲染邏輯；可再抽 `TopHUDView` / `BottomHUDView` / 把 chip 渲染抽成獨立 helper，但價值低於前面已做的 service 拆分
-
-## Recommended Next Refactors
-
-### Short Term
-
-- 真機驗證 `4:3` 裁切與前後鏡頭輸出方向
-- 補更多錄影成功 / 失敗狀態提示
-- 把 `Chat` 接上真實 AI（已有 `ChatEngine` 協定可換實作）
-
-### Mid Term
-
-- 把 HUD 顯示值改成更清楚的狀態模型
-- 讓 `Media` 支援專案、標籤或素材分類
-- 把 `TopHUDView` / `BottomHUDView` 拆出，VC 再瘦一輪
-
-### Long Term
-
-- 加入更完整的手動控制
-- 加入多軌音訊策略
-- 規劃真正的 AI / 雲端 `Chat` 工作流（含 system prompt 注入 app 狀態 + tool calling）
+技術債項目與下一步重構計畫集中在 [`../roadmap.md`](../roadmap.md)，這份文件只描述「目前長什麼樣」，不再列計畫，避免兩處 drift。
