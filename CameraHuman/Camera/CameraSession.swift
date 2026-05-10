@@ -59,6 +59,9 @@ final class CameraSession {
     private let audioDataOutput = AVCaptureAudioDataOutput()
     private var currentVideoInput: AVCaptureDeviceInput?
     private var currentAudioInput: AVCaptureDeviceInput?
+    /// 用來避免使用者狂點時，多個 configure 任務在 sessionQueue 上排隊。
+    /// 已在 sessionQueue 上跑的 configure 不會被中斷，但新的 caller 看到 `true` 就會跳過。
+    private var isConfiguring = false
 
     init(settings: CameraSettingsStore = .shared) {
         self.settings = settings
@@ -174,34 +177,54 @@ final class CameraSession {
             return
         }
 
+        // 避免重疊 configure 互相覆蓋。由於 queue 是 serial，這個 flag 主要是用來短路掉
+        // 「上一輪 configure 還沒回到 main thread 又被呼叫」的情況。
+        if isConfiguring { return }
+        isConfiguring = true
+
         queue.async { [weak self] in
             guard let self else { return }
+            defer {
+                DispatchQueue.main.async { self.isConfiguring = false }
+            }
 
             do {
-                let videoInput = try AVCaptureDeviceInput(device: lensOption.device)
-                let audioDevice = self.audioAuthorized ? AVCaptureDevice.default(for: .audio) : nil
-                let audioInput = try audioDevice.map { try AVCaptureDeviceInput(device: $0) }
-
                 self.captureSession.beginConfiguration()
 
                 let preferredPreset = self.settings.videoPreset.capturePreset
-                self.captureSession.sessionPreset = self.captureSession.canSetSessionPreset(preferredPreset) ? preferredPreset : .high
-
-                if let currentVideoInput = self.currentVideoInput {
-                    self.captureSession.removeInput(currentVideoInput)
-                }
-                if self.captureSession.canAddInput(videoInput) {
-                    self.captureSession.addInput(videoInput)
-                    self.currentVideoInput = videoInput
+                let resolvedPreset: AVCaptureSession.Preset = self.captureSession.canSetSessionPreset(preferredPreset) ? preferredPreset : .high
+                if self.captureSession.sessionPreset != resolvedPreset {
+                    self.captureSession.sessionPreset = resolvedPreset
                 }
 
-                if let currentAudioInput = self.currentAudioInput {
-                    self.captureSession.removeInput(currentAudioInput)
-                    self.currentAudioInput = nil
+                // Video input：只在 device 不同時才換
+                let needsVideoSwap = self.currentVideoInput?.device.uniqueID != lensOption.device.uniqueID
+                if needsVideoSwap {
+                    if let currentVideoInput = self.currentVideoInput {
+                        self.captureSession.removeInput(currentVideoInput)
+                    }
+                    let videoInput = try AVCaptureDeviceInput(device: lensOption.device)
+                    if self.captureSession.canAddInput(videoInput) {
+                        self.captureSession.addInput(videoInput)
+                        self.currentVideoInput = videoInput
+                    }
                 }
-                if let audioInput, self.captureSession.canAddInput(audioInput) {
-                    self.captureSession.addInput(audioInput)
-                    self.currentAudioInput = audioInput
+
+                // Audio input：只在權限或 device 變動時才動
+                let desiredAudioDevice = self.audioAuthorized ? AVCaptureDevice.default(for: .audio) : nil
+                let needsAudioSwap = self.currentAudioInput?.device.uniqueID != desiredAudioDevice?.uniqueID
+                if needsAudioSwap {
+                    if let currentAudioInput = self.currentAudioInput {
+                        self.captureSession.removeInput(currentAudioInput)
+                        self.currentAudioInput = nil
+                    }
+                    if let device = desiredAudioDevice {
+                        let audioInput = try AVCaptureDeviceInput(device: device)
+                        if self.captureSession.canAddInput(audioInput) {
+                            self.captureSession.addInput(audioInput)
+                            self.currentAudioInput = audioInput
+                        }
+                    }
                 }
 
                 if !self.captureSession.outputs.contains(where: { $0 === self.movieOutput }),
@@ -233,6 +256,7 @@ final class CameraSession {
                     self.onConfigured?(lensOption.device, lensOption.title)
                 }
             } catch {
+                self.captureSession.commitConfiguration()
                 DispatchQueue.main.async {
                     self.onConfigureFailed?(error.localizedDescription)
                 }

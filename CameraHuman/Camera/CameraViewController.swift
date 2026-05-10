@@ -58,6 +58,10 @@ final class CameraViewController: UIViewController {
         configureUI()
         wireServices()
 
+        // 把 preview layer 建好就掛上去（綁到 session）。session 之後增刪 input 它會自動跟著刷新，
+        // 不必每次 onConfigured 都重建一次。
+        previewView.attachPreviewLayer(AVCaptureVideoPreviewLayer(session: session.captureSession))
+
         session.refreshLenses()
         rebuildLensButtons()
 
@@ -86,7 +90,6 @@ final class CameraViewController: UIViewController {
     private func wireServices() {
         session.onConfigured = { [weak self] device, lensTitle in
             guard let self else { return }
-            self.previewView.attachPreviewLayer(AVCaptureVideoPreviewLayer(session: self.session.captureSession))
             self.updateLensButtons()
             self.updateHUD(for: device, lensTitle: lensTitle)
             self.audioMonitor.connection = self.session.audioMeterConnection
@@ -129,6 +132,12 @@ final class CameraViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func lensButtonTapped(_ sender: UIButton) {
+        let options = session.availableLensOptions
+        guard options.indices.contains(sender.tag) else { return }
+        // 點擊已選中的鏡頭 → 不必重建整個 capture session
+        if options[sender.tag].device.uniqueID == session.currentLensOption?.device.uniqueID {
+            return
+        }
         session.selectLens(at: sender.tag)
         session.configure(interfaceOrientation: view.window?.windowScene?.interfaceOrientation)
         updateLensButtons()
