@@ -288,12 +288,8 @@ git status --short
 7. 更新必要文件
 8. 再看一次 `git status --short`
 
-## Current Highest-Value Next Steps
+## Roadmap
 
-從開發效率與風險管理來看，接下來最值得做的是：
+下一步要做什麼集中在 [`../roadmap.md`](../roadmap.md)。這份文件只描述「怎麼工作」，不再列待辦項。
 
-1. 做一輪真機驗證，專查 `4:3`、前後鏡頭、錄影輸出方向、實機 IRIS / FPS / SHUTTER 值是否合理
-2. 把 `Chat` 接上真實 AI（已有 `ChatEngine` 協定預留 swap 點）
-3. 擴充 `Media` 的素材分類、搜尋、標籤
-
-`CameraViewController` 已經做過一輪 service 拆分（`CameraSession` / `CameraRecorder` / `AudioLevelMonitor` + `AspectMaskView` / `AudioMeterCardView` / `ToastView`）。下一輪如果還要繼續瘦 VC，目標應該是 `TopHUDView` / `BottomHUDView` 抽出，但價值已遠低於前面幾刀，不急。
+需要新加 next-step 項目時，**寫到 `roadmap.md`，不要寫到這裡**。

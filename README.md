@@ -124,9 +124,6 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
 - `Chat` 還是本地 keyword 引擎；架構已用 `ChatEngine` 協定預留 swap 點，但未接外部 AI。
 - `Media` 是單層素材列表，沒有專案、資料夾或標籤系統。
 
-## Next Recommended Work
+## Roadmap
 
-- 在真機上驗證前後鏡頭、`16:9 / 4:3`、錄影方向與裁切結果（最高優先）
-- 把 `Chat` 接上真實 AI——候選：Apple Foundation Models（裝置端、免 key、需 iOS 18.1+ Apple Intelligence 機型）、Gemini Flash 免費 tier、Claude Haiku
-- 擴充 `Media` 的素材分類、搜尋與標籤
-- 把 `Chat` 的 planner 與素材管理做更深整合（例如 shot list 對應多支 clip，而不是只有單一 linked clip）
+「下一步要做什麼」「該重構什麼」「累積的技術債」全部集中在 [`roadmap.md`](./roadmap.md)，這裡不再重複列出，避免兩處 drift。
