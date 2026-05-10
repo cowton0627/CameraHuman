@@ -57,6 +57,7 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
     private var currentVideoInput: AVCaptureDeviceInput?
     private var currentAudioInput: AVCaptureDeviceInput?
     private var audioMeterConnection: AVCaptureConnection?
+    private var currentAudioTrackCount: Int = 0
 
     private var cameraAuthorized = false
     private var audioAuthorized = false
@@ -65,6 +66,7 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
     private var availableLensOptions: [LensOption] = []
     private var recordingState: RecordingState = .idle
     private var recordingStartDate: Date?
+    private var lastSavedRecording: MediaRecording?
     private var recordingTimer: Timer?
     private var audioMeterTimer: Timer?
     private let previewContainerView = UIView()
@@ -89,16 +91,25 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
     private let recordButton = UIButton(type: .system)
     private let switchCameraButton = UIButton(type: .system)
     private let inspectButton = UIButton(type: .system)
+    private let deleteLastRecordingButton = UIButton(type: .system)
     private let audioMeterCardView = UIView()
     private let audioTitleLabel = UILabel()
     private let audioTrackLabel = UILabel()
     private let audioLevelLabel = UILabel()
+    private let audioSummaryLabel = UILabel()
     private let audioBarsStackView = UIStackView()
     private let toastLabel = UILabel()
     private var audioBarViews: [UIView] = []
     private var audioBarHeightConstraints: [NSLayoutConstraint] = []
+    private var portraitLayoutConstraints: [NSLayoutConstraint] = []
+    private var landscapeLayoutConstraints: [NSLayoutConstraint] = []
+    private var isUsingLandscapeLayout = false
 
     private let guideLines = [UIView(), UIView(), UIView(), UIView()]
+
+    override var prefersStatusBarHidden: Bool {
+        true
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,6 +123,7 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         previewLayer?.frame = previewContainerView.bounds
+        updateCameraLayoutIfNeeded()
         updateAspectMaskLayout()
         updateGuideFrames()
     }
@@ -138,7 +150,27 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
     }
 
     @objc private func inspectTapped(_ sender: UIButton) {
-        bottomStatusLabel.text = buildCameraReport()
+        presentCameraDiagnostics()
+    }
+
+    @objc private func deleteLastRecordingTapped(_ sender: UIButton) {
+        guard let recording = lastSavedRecording else { return }
+        let alertController = UIAlertController(title: "刪除最近錄影？", message: recording.fileName, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "取消", style: .cancel))
+        alertController.addAction(UIAlertAction(title: "刪除", style: .destructive) { [weak self] _ in
+            guard let self else { return }
+            do {
+                try MediaLibrary.shared.deleteRecording(at: recording.url)
+                self.lastSavedRecording = nil
+                self.updateDeleteLastRecordingButton()
+                self.bottomStatusLabel.text = "已刪除最近錄影。"
+                self.showToast(text: "已刪除\n\(recording.fileName)")
+            } catch {
+                self.bottomStatusLabel.text = "刪除失敗：\(error.localizedDescription)"
+                self.showToast(text: "刪除失敗")
+            }
+        })
+        present(alertController, animated: true)
     }
 
     @objc private func recordButtonTapped(_ sender: UIButton) {
@@ -175,6 +207,7 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
 
         let channels = audioMeterConnection?.audioChannels ?? []
         let trackCount = channels.count
+        currentAudioTrackCount = trackCount
         let averageLevel = channels.map(\.averagePowerLevel).max() ?? -80
         let normalizedLevel = max(0, min(1, (averageLevel + 60) / 60))
         updateAudioMeter(level: normalizedLevel, trackCount: trackCount)
@@ -210,6 +243,7 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         ])
         updateAudioMeter(level: 0, trackCount: 0)
         updateRecordButtonAppearance()
+        updateDeleteLastRecordingButton()
     }
 
     private func configurePreview() {
@@ -242,10 +276,6 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         aspectMaskBottomHeightConstraint = aspectMaskBottomView.heightAnchor.constraint(equalToConstant: 0)
 
         NSLayoutConstraint.activate([
-            previewContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            previewContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            previewContainerView.topAnchor.constraint(equalTo: view.topAnchor),
-            previewContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             vignetteView.leadingAnchor.constraint(equalTo: previewContainerView.leadingAnchor),
             vignetteView.trailingAnchor.constraint(equalTo: previewContainerView.trailingAnchor),
             vignetteView.topAnchor.constraint(equalTo: previewContainerView.topAnchor),
@@ -274,27 +304,30 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
     private func configureTopHUD() {
         topHUDView.translatesAutoresizingMaskIntoConstraints = false
         topHUDView.axis = .vertical
-        topHUDView.spacing = 8
-        topHUDView.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        topHUDView.spacing = 6
+        topHUDView.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         topHUDView.isLayoutMarginsRelativeArrangement = true
-        topHUDView.backgroundColor = UIColor.black.withAlphaComponent(0.62)
-        topHUDView.layer.cornerRadius = 18
+        topHUDView.backgroundColor = UIColor.black.withAlphaComponent(0.18)
+        topHUDView.layer.cornerRadius = 12
 
         topTitleLabel.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
         topTitleLabel.textColor = .white
         topTitleLabel.text = "CAMERA"
+        topTitleLabel.isHidden = true
 
         primaryStatusStackView.axis = .horizontal
-        primaryStatusStackView.spacing = 6
+        primaryStatusStackView.spacing = 8
         primaryStatusStackView.distribution = .fillEqually
 
-        technicalStatusStackView.axis = .vertical
-        technicalStatusStackView.spacing = 6
+        technicalStatusStackView.axis = .horizontal
+        technicalStatusStackView.spacing = 10
         technicalStatusStackView.distribution = .fillEqually
 
-        secondaryStatusLabel.font = .monospacedSystemFont(ofSize: 10, weight: .regular)
+        secondaryStatusLabel.font = .monospacedSystemFont(ofSize: 9, weight: .regular)
         secondaryStatusLabel.textColor = UIColor.white.withAlphaComponent(0.84)
         secondaryStatusLabel.numberOfLines = 1
+        secondaryStatusLabel.adjustsFontSizeToFitWidth = true
+        secondaryStatusLabel.minimumScaleFactor = 0.7
         secondaryStatusLabel.text = "等待相機與麥克風權限"
 
         topHUDView.addArrangedSubview(topTitleLabel)
@@ -304,20 +337,20 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         view.addSubview(topHUDView)
 
         NSLayoutConstraint.activate([
-            topHUDView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 14),
-            topHUDView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -14),
-            topHUDView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12)
+            topHUDView.leadingAnchor.constraint(equalTo: previewContainerView.leadingAnchor, constant: 8),
+            topHUDView.trailingAnchor.constraint(equalTo: previewContainerView.trailingAnchor, constant: -8),
+            topHUDView.topAnchor.constraint(equalTo: previewContainerView.topAnchor, constant: 8)
         ])
     }
 
     private func configureBottomHUD() {
         bottomHUDView.translatesAutoresizingMaskIntoConstraints = false
-        bottomHUDView.backgroundColor = UIColor.black.withAlphaComponent(0.62)
-        bottomHUDView.layer.cornerRadius = 26
+        bottomHUDView.backgroundColor = .clear
+        bottomHUDView.layer.cornerRadius = 0
 
         lensStackView.translatesAutoresizingMaskIntoConstraints = false
         lensStackView.axis = .horizontal
-        lensStackView.spacing = 10
+        lensStackView.spacing = 8
         lensStackView.distribution = .fillEqually
 
         bottomStatusLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -325,6 +358,14 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         bottomStatusLabel.textColor = UIColor.white.withAlphaComponent(0.84)
         bottomStatusLabel.numberOfLines = 1
         bottomStatusLabel.text = "Camera + Mic capture session"
+
+        audioSummaryLabel.translatesAutoresizingMaskIntoConstraints = false
+        audioSummaryLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .semibold)
+        audioSummaryLabel.textColor = UIColor.systemGreen
+        audioSummaryLabel.textAlignment = .right
+        audioSummaryLabel.adjustsFontSizeToFitWidth = true
+        audioSummaryLabel.minimumScaleFactor = 0.75
+        audioSummaryLabel.text = "MIC -- dB"
 
         recordButton.translatesAutoresizingMaskIntoConstraints = false
         recordButton.layer.cornerRadius = 30
@@ -339,12 +380,18 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         leftControlsStackView.alignment = .center
 
         switchCameraButton.translatesAutoresizingMaskIntoConstraints = false
-        styleHUDButton(switchCameraButton, title: "切換")
+        styleHUDButton(switchCameraButton, title: "arrow.2.circlepath")
         switchCameraButton.addTarget(self, action: #selector(switchCameraTapped(_:)), for: .touchUpInside)
 
         inspectButton.translatesAutoresizingMaskIntoConstraints = false
-        styleHUDButton(inspectButton, title: "資訊")
+        styleHUDButton(inspectButton, title: "info.circle")
         inspectButton.addTarget(self, action: #selector(inspectTapped(_:)), for: .touchUpInside)
+
+        deleteLastRecordingButton.translatesAutoresizingMaskIntoConstraints = false
+        styleHUDButton(deleteLastRecordingButton, title: "trash")
+        deleteLastRecordingButton.addTarget(self, action: #selector(deleteLastRecordingTapped(_:)), for: .touchUpInside)
+        deleteLastRecordingButton.isEnabled = false
+        deleteLastRecordingButton.alpha = 0.35
 
         audioMeterCardView.translatesAutoresizingMaskIntoConstraints = false
         audioMeterCardView.backgroundColor = UIColor.white.withAlphaComponent(0.10)
@@ -394,6 +441,7 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
 
         leftControlsStackView.addArrangedSubview(switchCameraButton)
         leftControlsStackView.addArrangedSubview(inspectButton)
+        leftControlsStackView.addArrangedSubview(deleteLastRecordingButton)
         audioMeterCardView.addSubview(audioTitleLabel)
         audioMeterCardView.addSubview(audioTrackLabel)
         audioMeterCardView.addSubview(audioLevelLabel)
@@ -403,38 +451,22 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         bottomHUDView.addSubview(bottomStatusLabel)
         bottomHUDView.addSubview(recordButton)
         bottomHUDView.addSubview(leftControlsStackView)
+        bottomHUDView.addSubview(audioSummaryLabel)
         bottomHUDView.addSubview(audioMeterCardView)
         view.addSubview(bottomHUDView)
 
-        NSLayoutConstraint.activate([
-            bottomHUDView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 14),
-            bottomHUDView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -14),
-            bottomHUDView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-
-            lensStackView.leadingAnchor.constraint(equalTo: bottomHUDView.leadingAnchor, constant: 14),
-            lensStackView.trailingAnchor.constraint(equalTo: bottomHUDView.trailingAnchor, constant: -14),
-            lensStackView.topAnchor.constraint(equalTo: bottomHUDView.topAnchor, constant: 14),
-            lensStackView.heightAnchor.constraint(equalToConstant: 42),
-
-            bottomStatusLabel.leadingAnchor.constraint(equalTo: lensStackView.leadingAnchor),
-            bottomStatusLabel.trailingAnchor.constraint(equalTo: lensStackView.trailingAnchor),
-            bottomStatusLabel.topAnchor.constraint(equalTo: lensStackView.bottomAnchor, constant: 12),
-
-            recordButton.centerXAnchor.constraint(equalTo: bottomHUDView.centerXAnchor),
-            recordButton.topAnchor.constraint(equalTo: bottomStatusLabel.bottomAnchor, constant: 16),
-            recordButton.widthAnchor.constraint(equalToConstant: 60),
-            recordButton.heightAnchor.constraint(equalToConstant: 60),
-            recordButton.bottomAnchor.constraint(equalTo: bottomHUDView.bottomAnchor, constant: -16),
-
-            leftControlsStackView.leadingAnchor.constraint(equalTo: lensStackView.leadingAnchor),
-            leftControlsStackView.centerYAnchor.constraint(equalTo: recordButton.centerYAnchor),
-            leftControlsStackView.trailingAnchor.constraint(lessThanOrEqualTo: recordButton.leadingAnchor, constant: -12),
-
-            audioMeterCardView.trailingAnchor.constraint(equalTo: lensStackView.trailingAnchor),
-            audioMeterCardView.centerYAnchor.constraint(equalTo: recordButton.centerYAnchor),
-            audioMeterCardView.leadingAnchor.constraint(greaterThanOrEqualTo: recordButton.trailingAnchor, constant: 12),
-            audioMeterCardView.widthAnchor.constraint(equalToConstant: 108),
-            audioMeterCardView.heightAnchor.constraint(equalToConstant: 84),
+        let sharedConstraints = [
+            bottomStatusLabel.heightAnchor.constraint(equalToConstant: 14),
+            recordButton.widthAnchor.constraint(equalToConstant: 56),
+            recordButton.heightAnchor.constraint(equalToConstant: 56),
+            audioMeterCardView.widthAnchor.constraint(equalToConstant: 118),
+            audioMeterCardView.heightAnchor.constraint(equalToConstant: 74),
+            switchCameraButton.widthAnchor.constraint(equalToConstant: 38),
+            switchCameraButton.heightAnchor.constraint(equalToConstant: 38),
+            inspectButton.widthAnchor.constraint(equalToConstant: 38),
+            inspectButton.heightAnchor.constraint(equalToConstant: 38),
+            deleteLastRecordingButton.widthAnchor.constraint(equalToConstant: 38),
+            deleteLastRecordingButton.heightAnchor.constraint(equalToConstant: 38),
 
             audioTitleLabel.leadingAnchor.constraint(equalTo: audioMeterCardView.leadingAnchor, constant: 10),
             audioTitleLabel.topAnchor.constraint(equalTo: audioMeterCardView.topAnchor, constant: 10),
@@ -446,13 +478,80 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
             audioBarsStackView.trailingAnchor.constraint(equalTo: audioMeterCardView.trailingAnchor, constant: -10),
             audioBarsStackView.bottomAnchor.constraint(equalTo: audioMeterCardView.bottomAnchor, constant: -10),
             audioBarsStackView.heightAnchor.constraint(equalToConstant: 22)
-        ])
+        ]
+
+        portraitLayoutConstraints = [
+            previewContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            previewContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            previewContainerView.topAnchor.constraint(equalTo: view.topAnchor),
+            previewContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            bottomHUDView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bottomHUDView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bottomHUDView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            bottomHUDView.heightAnchor.constraint(equalToConstant: 82),
+
+            lensStackView.leadingAnchor.constraint(equalTo: bottomHUDView.leadingAnchor, constant: 12),
+            lensStackView.trailingAnchor.constraint(lessThanOrEqualTo: leftControlsStackView.leadingAnchor, constant: -12),
+            lensStackView.centerYAnchor.constraint(equalTo: recordButton.centerYAnchor),
+            lensStackView.heightAnchor.constraint(equalToConstant: 38),
+
+            recordButton.centerXAnchor.constraint(equalTo: bottomHUDView.centerXAnchor),
+            recordButton.centerYAnchor.constraint(equalTo: bottomHUDView.centerYAnchor, constant: -6),
+
+            leftControlsStackView.leadingAnchor.constraint(greaterThanOrEqualTo: recordButton.trailingAnchor, constant: 8),
+            leftControlsStackView.trailingAnchor.constraint(equalTo: bottomHUDView.trailingAnchor, constant: -12),
+            leftControlsStackView.centerYAnchor.constraint(equalTo: recordButton.centerYAnchor),
+
+            bottomStatusLabel.leadingAnchor.constraint(equalTo: bottomHUDView.leadingAnchor, constant: 16),
+            bottomStatusLabel.trailingAnchor.constraint(lessThanOrEqualTo: audioSummaryLabel.leadingAnchor, constant: -12),
+            bottomStatusLabel.topAnchor.constraint(equalTo: recordButton.bottomAnchor, constant: 6),
+
+            audioSummaryLabel.trailingAnchor.constraint(equalTo: bottomHUDView.trailingAnchor, constant: -16),
+            audioSummaryLabel.centerYAnchor.constraint(equalTo: bottomStatusLabel.centerYAnchor),
+            audioSummaryLabel.widthAnchor.constraint(equalToConstant: 112),
+
+            audioMeterCardView.trailingAnchor.constraint(equalTo: bottomHUDView.trailingAnchor, constant: -12),
+            audioMeterCardView.bottomAnchor.constraint(equalTo: bottomHUDView.bottomAnchor, constant: -8)
+        ]
+
+        landscapeLayoutConstraints = [
+            previewContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            previewContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            previewContainerView.topAnchor.constraint(equalTo: view.topAnchor),
+            previewContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            bottomHUDView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            bottomHUDView.topAnchor.constraint(equalTo: view.topAnchor),
+            bottomHUDView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            bottomHUDView.widthAnchor.constraint(equalToConstant: 72),
+
+            recordButton.centerXAnchor.constraint(equalTo: bottomHUDView.centerXAnchor),
+            recordButton.centerYAnchor.constraint(equalTo: bottomHUDView.centerYAnchor),
+
+            leftControlsStackView.centerXAnchor.constraint(equalTo: bottomHUDView.centerXAnchor),
+            leftControlsStackView.bottomAnchor.constraint(equalTo: recordButton.topAnchor, constant: -22),
+
+            lensStackView.centerXAnchor.constraint(equalTo: bottomHUDView.centerXAnchor),
+            lensStackView.topAnchor.constraint(equalTo: recordButton.bottomAnchor, constant: 22),
+            lensStackView.widthAnchor.constraint(equalToConstant: 72),
+
+            audioMeterCardView.centerXAnchor.constraint(equalTo: bottomHUDView.centerXAnchor),
+            audioMeterCardView.bottomAnchor.constraint(equalTo: bottomHUDView.bottomAnchor, constant: -12),
+
+            bottomStatusLabel.leadingAnchor.constraint(equalTo: bottomHUDView.leadingAnchor, constant: 8),
+            bottomStatusLabel.trailingAnchor.constraint(equalTo: bottomHUDView.trailingAnchor, constant: -8),
+            bottomStatusLabel.topAnchor.constraint(equalTo: bottomHUDView.topAnchor, constant: 8)
+        ]
+
+        NSLayoutConstraint.activate(sharedConstraints)
+        updateCameraLayoutIfNeeded(force: true)
     }
 
     private func configureGuides() {
         for line in guideLines {
             line.backgroundColor = UIColor.white.withAlphaComponent(0.18)
-            view.addSubview(line)
+            previewContainerView.addSubview(line)
         }
     }
 
@@ -475,6 +574,25 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
             toastLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 28),
             toastLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -28)
         ])
+    }
+
+    private func updateCameraLayoutIfNeeded(force: Bool = false) {
+        let shouldUseLandscapeLayout = view.bounds.width > view.bounds.height
+        guard force || shouldUseLandscapeLayout != isUsingLandscapeLayout else { return }
+
+        NSLayoutConstraint.deactivate(isUsingLandscapeLayout ? landscapeLayoutConstraints : portraitLayoutConstraints)
+        NSLayoutConstraint.activate(shouldUseLandscapeLayout ? landscapeLayoutConstraints : portraitLayoutConstraints)
+        isUsingLandscapeLayout = shouldUseLandscapeLayout
+
+        leftControlsStackView.axis = shouldUseLandscapeLayout ? .vertical : .horizontal
+        lensStackView.axis = shouldUseLandscapeLayout ? .vertical : .horizontal
+        lensStackView.isHidden = shouldUseLandscapeLayout
+        audioMeterCardView.isHidden = true
+        audioSummaryLabel.isHidden = shouldUseLandscapeLayout
+        technicalStatusStackView.isHidden = false
+        secondaryStatusLabel.isHidden = shouldUseLandscapeLayout
+        bottomStatusLabel.textAlignment = shouldUseLandscapeLayout ? .center : .left
+        view.setNeedsLayout()
     }
 
     private func updateGuideFrames() {
@@ -732,8 +850,8 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
             let button = UIButton(type: .system)
             button.tag = index
             button.setTitle(option.title, for: .normal)
-            button.titleLabel?.font = .monospacedSystemFont(ofSize: 14, weight: .semibold)
-            button.layer.cornerRadius = 16
+            button.titleLabel?.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
+            button.layer.cornerRadius = 14
             button.layer.borderWidth = 1
             button.addTarget(self, action: #selector(lensButtonTapped(_:)), for: .touchUpInside)
             lensStackView.addArrangedSubview(button)
@@ -781,35 +899,17 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
             arrangedView.removeFromSuperview()
         }
 
-        let rows = stride(from: 0, to: titles.count, by: 3).map { startIndex in
-            Array(titles[startIndex..<min(startIndex + 3, titles.count)])
-        }
-
-        for rowTitles in rows {
-            let rowStackView = UIStackView()
-            rowStackView.axis = .horizontal
-            rowStackView.spacing = 6
-            rowStackView.distribution = .fillEqually
-
-            for title in rowTitles {
-                let label = UILabel()
-                label.textAlignment = .center
-                label.numberOfLines = 2
-                label.font = .monospacedSystemFont(ofSize: 9, weight: .medium)
-                label.textColor = .white
-                label.backgroundColor = UIColor.white.withAlphaComponent(0.10)
-                label.layer.cornerRadius = 8
-                label.clipsToBounds = true
-                label.attributedText = technicalChipText(for: title)
-                rowStackView.addArrangedSubview(label)
-            }
-
-            while rowStackView.arrangedSubviews.count < 3 {
-                let spacer = UIView()
-                rowStackView.addArrangedSubview(spacer)
-            }
-
-            technicalStatusStackView.addArrangedSubview(rowStackView)
+        for title in titles {
+            let label = UILabel()
+            label.textAlignment = .center
+            label.numberOfLines = 2
+            label.adjustsFontSizeToFitWidth = true
+            label.minimumScaleFactor = 0.72
+            label.font = .monospacedSystemFont(ofSize: 9, weight: .medium)
+            label.textColor = .white
+            label.backgroundColor = .clear
+            label.attributedText = technicalChipText(for: title)
+            technicalStatusStackView.addArrangedSubview(label)
         }
     }
 
@@ -869,11 +969,11 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         let label = UILabel()
         label.textAlignment = .center
         label.numberOfLines = 2
-        label.layer.cornerRadius = 8
+        label.layer.cornerRadius = 6
         label.clipsToBounds = true
         label.backgroundColor = isEmphasized
             ? accentColor.withAlphaComponent(0.24)
-            : UIColor.white.withAlphaComponent(0.10)
+            : UIColor.black.withAlphaComponent(0.34)
 
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
@@ -924,6 +1024,8 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
 
         audioTitleLabel.textColor = meterColor
         audioLevelLabel.textColor = meterColor
+        audioSummaryLabel.textColor = meterColor
+        audioSummaryLabel.text = "MIC \(decibels) dB"
 
         UIView.animate(withDuration: 0.12) {
             self.audioMeterCardView.layoutIfNeeded()
@@ -945,6 +1047,12 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
             recordButton.layer.cornerRadius = 16
             recordButton.isEnabled = true
         }
+    }
+
+    private func updateDeleteLastRecordingButton() {
+        let hasLastRecording = lastSavedRecording != nil
+        deleteLastRecordingButton.isEnabled = hasLastRecording
+        deleteLastRecordingButton.alpha = hasLastRecording ? 1 : 0.35
     }
 
     private func startRecordingTimer() {
@@ -1019,34 +1127,65 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
     }
 
     private func buildCameraReport() -> String {
-        let deviceTypes: [AVCaptureDevice.DeviceType] = [
-            .builtInWideAngleCamera,
-            .builtInUltraWideCamera,
-            .builtInTelephotoCamera,
-            .builtInTrueDepthCamera
-        ]
-
-        let discoverySession = AVCaptureDevice.DiscoverySession(
-            deviceTypes: deviceTypes,
-            mediaType: .video,
-            position: .unspecified
-        )
-
-        let lines = discoverySession.devices.map { device in
-            let position = device.position == .front ? "FRONT" : "BACK"
-            return "\(position) | \(device.localizedName) | \(device.deviceType.rawValue)"
+        let position = currentPosition == .front ? "FRONT" : "BACK"
+        let lens = currentLensOption?.title ?? "--"
+        let resolution: String
+        if let device = currentLensOption?.device {
+            let d = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+            resolution = "\(d.width)×\(d.height)"
+        } else {
+            resolution = "--"
         }
+        let micState = audioAuthorized ? "ON" : "OFF"
+        let trackCount = max(currentAudioTrackCount, audioAuthorized ? 1 : 0)
 
-        return lines.isEmpty ? "找不到可用鏡頭。" : lines.joined(separator: "\n")
+        return [
+            "Recording  \(recordingStateLabel())",
+            "Quality    \(qualityText()) · \(aspectRatioText())",
+            "Lens       \(lens) · \(position)",
+            "Resolution \(resolution)",
+            "Mic        \(micState) · \(trackCount) track\(trackCount == 1 ? "" : "s")"
+        ].joined(separator: "\n")
+    }
+
+    private func presentCameraDiagnostics() {
+        let report = buildCameraReport()
+        let alertController = UIAlertController(title: "Camera Diagnostics", message: report, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "Close", style: .cancel))
+        alertController.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
+            UIPasteboard.general.string = report
+            self.bottomStatusLabel.text = "診斷資訊已複製。"
+        })
+        present(alertController, animated: true)
+    }
+
+    private func recordingStateLabel() -> String {
+        switch recordingState {
+        case .idle:
+            return "IDLE"
+        case .starting:
+            return "STARTING"
+        case .recording:
+            return "RECORDING"
+        case .stopping:
+            return "STOPPING"
+        }
     }
 
     private func styleHUDButton(_ button: UIButton, title: String) {
-        button.setTitle(title, for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = .monospacedSystemFont(ofSize: 11, weight: .semibold)
+        if let image = UIImage(systemName: title) {
+            button.setImage(image, for: .normal)
+            button.setTitle(nil, for: .normal)
+            button.tintColor = .white
+            button.imageView?.contentMode = .scaleAspectFit
+        } else {
+            button.setTitle(title, for: .normal)
+            button.setTitleColor(.white, for: .normal)
+            button.titleLabel?.font = .monospacedSystemFont(ofSize: 11, weight: .semibold)
+        }
         button.backgroundColor = UIColor.white.withAlphaComponent(0.14)
-        button.layer.cornerRadius = 12
-        button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        button.layer.cornerRadius = 14
+        button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
     }
 
     private func technicalChipText(for rawText: String) -> NSAttributedString {
@@ -1091,8 +1230,8 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
         let targetHeight = min(bounds.height, bounds.width * (ratioSize.height / ratioSize.width))
         let maskHeight = max(0, (bounds.height - targetHeight) / 2)
 
-        aspectMaskTopHeightConstraint?.constant = maskHeight
-        aspectMaskBottomHeightConstraint?.constant = maskHeight
+        aspectMaskTopHeightConstraint?.constant = 0
+        aspectMaskBottomHeightConstraint?.constant = 0
         aspectFrameLabel.text = settings.aspectRatio.displayTitle
         previewContainerView.layoutIfNeeded()
     }
@@ -1120,6 +1259,8 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
                     do {
                         let savedRecording = try MediaLibrary.shared.storeRecording(from: outputFileURL, aspectRatio: aspectRatio)
                         DispatchQueue.main.async {
+                            self.lastSavedRecording = savedRecording
+                            self.updateDeleteLastRecordingButton()
                             self.bottomStatusLabel.text = "已儲存：\(savedRecording.fileName)"
                             self.showToast(text: "已儲存\n\(savedRecording.fileName)")
                         }
@@ -1149,6 +1290,8 @@ final class CameraViewController: UIViewController, AVCaptureFileOutputRecording
 private extension AVCaptureVideoOrientation {
     init(_ interfaceOrientation: UIInterfaceOrientation) {
         switch interfaceOrientation {
+        case .unknown:
+            self = .portrait
         case .portrait:
             self = .portrait
         case .portraitUpsideDown:
