@@ -47,6 +47,36 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
 
 ---
 
+## 跑測試
+
+Tests 放在 [`CameraHumanTests/`](./CameraHumanTests/)，需要先在 Xcode UI 加 **Unit Testing Bundle** target（File → New → Target → iOS / Test / Unit Testing Bundle）。
+
+加完 target 後：
+
+```bash
+xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
+  -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+  test
+```
+
+或 Xcode 內按 `Cmd+U`。
+
+只跑指定一個 test class：
+
+```bash
+xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
+  -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+  -only-testing:CameraHumanTests/KeywordChatEngineTests test
+```
+
+只看結果 / 不要 build log：
+
+```bash
+xcodebuild ... test 2>&1 | grep -E "Test Case|Test Suite|passed|failed"
+```
+
+---
+
 ## 模擬器流程
 
 ### 列出可用模擬器
