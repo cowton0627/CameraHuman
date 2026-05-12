@@ -7,14 +7,14 @@ protocol ChatEngine {
 
 /// 本地 keyword 比對 + 取狀態樣板。沒網路、零 token 成本，但回答只有套版，不真懂。
 final class KeywordChatEngine: ChatEngine {
-    private let settings: CameraSettingsStore
-    private let planner: ShotPlannerStore
-    private let mediaLibrary: MediaLibrary
+    private let settings: CameraSettings
+    private let planner: ShotPlanner
+    private let mediaLibrary: MediaLibraryReading
 
     init(
-        settings: CameraSettingsStore = .shared,
-        planner: ShotPlannerStore = .shared,
-        mediaLibrary: MediaLibrary = .shared
+        settings: CameraSettings = CameraSettingsStore.shared,
+        planner: ShotPlanner = ShotPlannerStore.shared,
+        mediaLibrary: MediaLibraryReading = MediaLibrary.shared
     ) {
         self.settings = settings
         self.planner = planner
