@@ -11,7 +11,16 @@ extension Notification.Name {
     static let cameraSettingsDidChange = Notification.Name("cameraSettingsDidChange")
 }
 
-final class CameraSettingsStore {
+/// 拍攝設定的唯讀視圖。給不需要修改設定、只需要讀的 consumer（如 `KeywordChatEngine`）用，
+/// 方便注入測試 stub 而不必持有真實的 `CameraSettingsStore` singleton。
+protocol CameraSettings: AnyObject {
+    var videoPreset: CameraSettingsStore.VideoPreset { get }
+    var aspectRatio: CameraSettingsStore.AspectRatio { get }
+    var startupCamera: CameraSettingsStore.StartupCamera { get }
+    var showGrid: Bool { get }
+}
+
+final class CameraSettingsStore: CameraSettings {
     enum VideoPreset: Int, CaseIterable {
         case hd
         case fullHD

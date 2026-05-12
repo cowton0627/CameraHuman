@@ -18,7 +18,13 @@ struct MediaRecording {
     let note: String
 }
 
-final class MediaLibrary {
+/// 唯讀的素材列表介面。給 `KeywordChatEngine` 之類只需查最近素材的 consumer 用，
+/// 抽 protocol 是為了測試時可以注入 stub 而不必碰真實的 file system。
+protocol MediaLibraryReading: AnyObject {
+    func listRecordings() throws -> [MediaRecording]
+}
+
+final class MediaLibrary: MediaLibraryReading {
     static let shared = MediaLibrary()
 
     private let fileManager = FileManager.default

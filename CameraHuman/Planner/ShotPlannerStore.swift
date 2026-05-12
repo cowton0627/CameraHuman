@@ -15,7 +15,12 @@ struct ShotChecklistItem {
     var isDone: Bool
 }
 
-final class ShotPlannerStore {
+/// `KeywordChatEngine` 需要往 planner 寫 action item。抽 protocol 是為了測試時注入 spy/stub。
+protocol ShotPlanner: AnyObject {
+    func addActionItem(_ value: String)
+}
+
+final class ShotPlannerStore: ShotPlanner {
     static let shared = ShotPlannerStore()
 
     private enum Keys {
