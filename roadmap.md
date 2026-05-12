@@ -38,6 +38,16 @@
 - 標題列加 `Edit` 進入多選刪除模式
 - 每 row 加 trash 圖示（最直接但視覺負擔重）
 
+### 4. 補測試覆蓋率（順著已建的 test target）
+
+第一批 `KeywordChatEngineTests` 已寫好。下一輪可補：
+
+- `CameraDiagnosticsTests`：純函式，給 `Inputs` 驗輸出字串，~5 個 case
+- `ShotPlannerStoreTests`：toggle / addActionItem 6 上限 / trim whitespace / persist→reload（需 ephemeral `UserDefaults` suite）
+- `CameraSettingsStoreTests`：default 值 / persist→reload / 變更時 fire notification
+
+跳過：VC、`CameraSession`、`CameraRecorder`、custom views（mock 成本太高，改靠手動 / 真機 / UI test）。
+
 ## Mid Term
 
 - 擴充 `Media` 的素材**分類、搜尋、標籤**——目前單層列表
@@ -74,3 +84,4 @@
 - ✅ 拆分 `CameraViewController`（1264 → 697 行）：`CameraSession` / `CameraRecorder` / `AudioLevelMonitor` / `AspectMaskView` / `AudioMeterCardView` / `ToastView`
 - ✅ 抽出 `ChatEngine` 協定、`KeyboardObserver`、`PlannerCardView`
 - ✅ 鏡頭切換優化：點同鏡頭直接 noop、`AVCaptureVideoPreviewLayer` 只建一次、同 device 不重建 input、加 `isConfiguring` flag 避免重疊 configure 排隊
+- ✅ 抽 `MediaLibraryReading` / `CameraSettings` / `ShotPlanner` protocol，`KeywordChatEngine` 改用 protocol 注入；補第一批 unit test（`KeywordChatEngineTests`，15 個 case 涵蓋所有 keyword 分支 / fallback / 4:3 vs 16:9 / spy 驗證）
