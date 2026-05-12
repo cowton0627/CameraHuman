@@ -73,3 +73,4 @@
 - ✅ 升級 Xcode 16 同步資料夾、按職責分資料夾
 - ✅ 拆分 `CameraViewController`（1264 → 697 行）：`CameraSession` / `CameraRecorder` / `AudioLevelMonitor` / `AspectMaskView` / `AudioMeterCardView` / `ToastView`
 - ✅ 抽出 `ChatEngine` 協定、`KeyboardObserver`、`PlannerCardView`
+- ✅ 鏡頭切換優化：點同鏡頭直接 noop、`AVCaptureVideoPreviewLayer` 只建一次、同 device 不重建 input、加 `isConfiguring` flag 避免重疊 configure 排隊

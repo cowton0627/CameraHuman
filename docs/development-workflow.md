@@ -243,37 +243,29 @@ git status --short
 
 ## Documentation Workflow
 
-這個 repo 現在建議維持三層文件：
+這個 repo 把文件按用途拆成 7 份，每份只做一件事，避免 drift：
 
-### 1. README
+| 檔案 | 用途 |
+|---|---|
+| [`README.md`](../README.md) | 產品 / 架構速覽，給第一次進 repo 的人 |
+| [`roadmap.md`](../roadmap.md) | Done + 還沒做的事 + Technical debt（單一來源） |
+| [`DECISIONS.md`](../DECISIONS.md) | 架構決策的「為什麼」與放棄了什麼 |
+| [`bugs.md`](../bugs.md) | 踩過的坑（症狀 / 根因 / 解法） |
+| [`runbook.md`](../runbook.md) | 直接複製貼上的指令：build / 模擬器 / icon / 清快取 |
+| [`docs/camera-architecture.md`](./camera-architecture.md) | 相機頁技術設計（service 層、capture flow、HUD） |
+| [`docs/development-workflow.md`](./development-workflow.md) | 這份文件：怎麼工作 / 思考順序 |
 
-用途：
+另外有 [`CLAUDE.md`](../CLAUDE.md) 給 Claude Code 開新 session 時自動載入，列出本 repo 特有的規則。
 
-- 給第一次進 repo 的人快速了解產品方向與現況
+### 落點原則
 
-位置：
-
-- [`README.md`](../README.md)
-
-### 2. Architecture Notes
-
-用途：
-
-- 解釋技術設計與重要決策
-
-位置：
-
-- [`docs/camera-architecture.md`](./camera-architecture.md)
-
-### 3. Development Workflow
-
-用途：
-
-- 規範實際開發、驗證與交付流程
-
-位置：
-
-- 這份文件
+- 「現在長什麼樣」→ `README.md`
+- 「為什麼這樣選」→ `DECISIONS.md`
+- 「之後要做什麼」→ `roadmap.md`（**不要散到 README / docs / 註解**）
+- 「踩過什麼坑」→ `bugs.md`
+- 「該跑什麼指令」→ `runbook.md`
+- 「技術設計細節」→ `docs/camera-architecture.md`
+- 「怎麼工作」→ 這份
 
 ## Suggested Working Loop
 
