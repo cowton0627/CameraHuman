@@ -55,7 +55,7 @@ Tests 放在 [`CameraHumanTests/`](./CameraHumanTests/)，需要先在 Xcode UI 
 
 ```bash
 xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
-  -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+  -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   test
 ```
 
@@ -65,7 +65,7 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
 
 ```bash
 xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
-  -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+  -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -only-testing:CameraHumanTests/KeywordChatEngineTests test
 ```
 
