@@ -59,7 +59,8 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
   test
 ```
 
-或 Xcode 內按 `Cmd+U`。
+或 Xcode 內按 `Cmd+U`。目前有 4 個 test class，共 55 個 test case：
+`KeywordChatEngineTests`（15）/ `CameraDiagnosticsTests`（12）/ `ShotPlannerStoreTests`（14）/ `CameraSettingsStoreTests`（14）。
 
 只跑指定一個 test class：
 
