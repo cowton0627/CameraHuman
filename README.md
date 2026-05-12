@@ -1,6 +1,8 @@
 # CameraHuman
 
-`CameraHuman` 是一個以 `UIKit + AVFoundation` 為主的 iOS 拍攝工具原型。主軸不是單純相機 demo，而是把拍攝、音訊監看、素材管理、拍攝規劃整成同一個工作流。
+**影人**（`CameraHuman`）是一個以 `UIKit + AVFoundation` 為主的 iOS 拍攝工具原型。主軸不是單純相機 demo，而是把拍攝、音訊監看、素材管理、拍攝規劃整成同一個工作流。
+
+> Bundle / scheme / target / repo 名稱維持 `CameraHuman`；「影人」是 iOS home screen 圖示下方的顯示名稱（`CFBundleDisplayName`）。
 
 ## Current App Structure
 
