@@ -6,7 +6,18 @@
 	objectVersion = 71;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		918673D52FB2BA55001CE5F4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 91C4CA622BA154550058B34B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 91C4CA692BA154550058B34B;
+			remoteInfo = CameraHuman;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		918673D12FB2BA55001CE5F4 /* CameraHumanTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CameraHumanTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		91C4CA6A2BA154550058B34B /* CameraHuman.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraHuman.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -21,10 +32,18 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		918673D22FB2BA55001CE5F4 /* CameraHumanTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CameraHumanTests; sourceTree = "<group>"; };
 		91C4CA6C2BA154550058B34B /* CameraHuman */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (91C4CAA02BA154570058B34B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CameraHuman; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		918673CE2FB2BA55001CE5F4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		91C4CA672BA154550058B34B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -39,6 +58,7 @@
 			isa = PBXGroup;
 			children = (
 				91C4CA6C2BA154550058B34B /* CameraHuman */,
+				918673D22FB2BA55001CE5F4 /* CameraHumanTests */,
 				91C4CA6B2BA154550058B34B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -47,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				91C4CA6A2BA154550058B34B /* CameraHuman.app */,
+				918673D12FB2BA55001CE5F4 /* CameraHumanTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -54,6 +75,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		918673D02FB2BA55001CE5F4 /* CameraHumanTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 918673D92FB2BA55001CE5F4 /* Build configuration list for PBXNativeTarget "CameraHumanTests" */;
+			buildPhases = (
+				918673CD2FB2BA55001CE5F4 /* Sources */,
+				918673CE2FB2BA55001CE5F4 /* Frameworks */,
+				918673CF2FB2BA55001CE5F4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				918673D62FB2BA55001CE5F4 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				918673D22FB2BA55001CE5F4 /* CameraHumanTests */,
+			);
+			name = CameraHumanTests;
+			packageProductDependencies = (
+			);
+			productName = CameraHumanTests;
+			productReference = 918673D12FB2BA55001CE5F4 /* CameraHumanTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		91C4CA692BA154550058B34B /* CameraHuman */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 91C4CA812BA154570058B34B /* Build configuration list for PBXNativeTarget "CameraHuman" */;
@@ -81,9 +125,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1520;
+				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 1520;
 				TargetAttributes = {
+					918673D02FB2BA55001CE5F4 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = 91C4CA692BA154550058B34B;
+					};
 					91C4CA692BA154550058B34B = {
 						CreatedOnToolsVersion = 15.2;
 					};
@@ -103,11 +151,19 @@
 			projectRoot = "";
 			targets = (
 				91C4CA692BA154550058B34B /* CameraHuman */,
+				918673D02FB2BA55001CE5F4 /* CameraHumanTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		918673CF2FB2BA55001CE5F4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		91C4CA682BA154550058B34B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -118,6 +174,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		918673CD2FB2BA55001CE5F4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		91C4CA662BA154550058B34B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -127,7 +190,59 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		918673D62FB2BA55001CE5F4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 91C4CA692BA154550058B34B /* CameraHuman */;
+			targetProxy = 918673D52FB2BA55001CE5F4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		918673D72FB2BA55001CE5F4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VWDLUM96X8;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cowton0627.CameraHumanTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CameraHuman.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CameraHuman";
+			};
+			name = Debug;
+		};
+		918673D82FB2BA55001CE5F4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VWDLUM96X8;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cowton0627.CameraHumanTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CameraHuman.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CameraHuman";
+			};
+			name = Release;
+		};
 		91C4CA7F2BA154570058B34B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -304,6 +419,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		918673D92FB2BA55001CE5F4 /* Build configuration list for PBXNativeTarget "CameraHumanTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				918673D72FB2BA55001CE5F4 /* Debug */,
+				918673D82FB2BA55001CE5F4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		91C4CA652BA154550058B34B /* Build configuration list for PBXProject "CameraHuman" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
