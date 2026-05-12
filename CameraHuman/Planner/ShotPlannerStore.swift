@@ -30,14 +30,16 @@ final class ShotPlannerStore: ShotPlanner {
         static let linkedRecordingName = "shot_planner_linked_recording_name"
     }
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
 
     private(set) var checklist: [ShotChecklistItem]
     private(set) var notes: String
     private(set) var actionItems: [String]
     private(set) var linkedRecordingName: String?
 
-    private init() {
+    /// `defaults` 預設用 `.standard`，測試時可注入獨立 suite 避免污染。Production 走 `.shared`。
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         let defaultItems = [
             ShotChecklistItem(id: "framing", title: "確認構圖與比例", isDone: false),
             ShotChecklistItem(id: "audio", title: "確認收音與軌道", isDone: false),

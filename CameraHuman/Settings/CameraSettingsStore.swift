@@ -89,7 +89,7 @@ final class CameraSettingsStore: CameraSettings {
         static let showGrid = "camera_settings_show_grid"
     }
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
 
     var videoPreset: VideoPreset {
         didSet { persist() }
@@ -107,7 +107,9 @@ final class CameraSettingsStore: CameraSettings {
         didSet { persist() }
     }
 
-    private init() {
+    /// `defaults` 預設用 `.standard`，測試時可注入獨立 suite 避免污染。Production 走 `.shared`。
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         videoPreset = VideoPreset(rawValue: defaults.integer(forKey: Keys.videoPreset)) ?? .fullHD
         aspectRatio = AspectRatio(rawValue: defaults.integer(forKey: Keys.aspectRatio)) ?? .ratio16x9
         startupCamera = StartupCamera(rawValue: defaults.integer(forKey: Keys.startupCamera)) ?? .back
