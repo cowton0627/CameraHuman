@@ -152,3 +152,28 @@ modified: CameraHuman.xcodeproj/xcuserdata/<user>.xcuserdatad/xcdebugger/Breakpo
 3. commit
 
 **之後辨識**：`git ls-files | grep xcuserdata` 看是否還有殘留追蹤；新 repo 首次 init 時要先建 `.gitignore` 再開始 commit。
+
+---
+
+## 10. 鏡頭點 1x 卡住 0.3~1 秒
+
+**症狀**：進 Camera 後預設已是 1x，但手動再點一次 1x 按鈕時畫面會卡 0.3~1 秒，preview 短暫黑屏 / 停格，看起來像當機。
+
+**根因**：三層浪費疊加：
+1. `lensButtonTapped` 完全不檢查「點到的鏡頭跟當前鏡頭是否相同」，永遠觸發 `session.configure(...)`
+2. `CameraSession.configure` 不論是不是同 device，都會跑完整 `beginConfiguration` / 移除舊 input / 建新 input / 移除舊 audio / 建新 audio / `commitConfiguration` 一輪
+3. `session.onConfigured` callback 每次都 `AVCaptureVideoPreviewLayer(session: …)` 創新 layer——雖然 `attachPreviewLayer` 內 guard 擋掉只裝一次，但這個新 layer 在 init 時會自動把自己掛上 session 的 connection，session 短暫多了一條無用 connection，再被 ARC 釋放
+
+實機上每次 begin/commit 就 0.3~1 秒，期間 preview 直接黑。視覺上 = 卡。
+
+**解法**：
+- VC `lensButtonTapped`：先比 `device.uniqueID`，相同直接 return
+- VC `viewDidLoad`：preview layer 改成只建一次掛上去，`onConfigured` 不再每次重建（layer 綁到 session，session 加減 input 它自動跟著刷新）
+- `CameraSession.configure`：
+  - 同 device 不動 video input
+  - 同 audio device 不動 audio input
+  - `sessionPreset` 已是目標時不重設
+  - 加 `isConfiguring` flag 避免使用者狂點時，多個 configure 任務在 sessionQueue 排隊
+  - 失敗路徑記得 `commitConfiguration`，不留懸空 begin
+
+**之後辨識**：UI 操作後 preview 短暫黑屏，先看是不是觸發了不必要的 capture session 重新 configure；對「重複觸發 noop 路徑」一律加短路。

@@ -302,9 +302,9 @@ VC 透過 `previewView.setAspectRatio(_:)` / `previewView.setGuidesVisible(_:)` 
 目前顯示的是簡化監看：
 
 - 一個 compact audio card
-- 軌道數
-- 簡化 bar meter
-- level 百分比
+- 軌道數（`TRACKS N`）
+- 4 條動態 bar meter（高度跟 level 連動）
+- dB 數值（`String(format: "%02d dB", decibels)`，正規化後 0~1 → -60~0 dB）
 
 不是完整 waveform，也不是多軌細節檢視。
 
@@ -318,7 +318,7 @@ VC 透過 `previewView.setAspectRatio(_:)` / `previewView.setGuidesVisible(_:)` 
 2. 發送 `.cameraSettingsDidChange`
 3. `CameraViewController` 收到後：
    - 透過 `AspectMaskView` 更新 guide visibility 與 aspect 框
-   - 若 recorder 為 `idle`，呼叫 `session.resetPositionFromSettings()` + `session.configure(...)` 重建 session
+   - 若 recorder 為 `idle`，呼叫 `session.resetPositionFromSettings()` + `session.configure(...)`；`CameraSession.configure` 內部對「同 device / 同 audio / 同 preset」會短路，不真的重建 input
    - 若正在錄影，先顯示「部份設定會在結束目前錄影後套用」，不打斷當前錄影
 
 ### Camera -> Media

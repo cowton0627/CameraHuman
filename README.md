@@ -130,7 +130,7 @@ scripts/
 |---|---|
 | [`README.md`](./README.md) | 你正在看的這份。產品 / 架構速覽 |
 | [`roadmap.md`](./roadmap.md) | Done + 還沒做的事（Short / Mid / Long Term + Technical Debt） |
-| [`DECISIONS.md`](./DECISIONS.md) | 12 個架構決策的「為什麼」與放棄了什麼 |
+| [`DECISIONS.md`](./DECISIONS.md) | 架構決策的「為什麼」與放棄了什麼 |
 | [`bugs.md`](./bugs.md) | 踩過的坑（症狀 / 根因 / 解法） |
 | [`runbook.md`](./runbook.md) | Build、模擬器、icon 生成、清快取等實際指令 |
 | [`docs/camera-architecture.md`](./docs/camera-architecture.md) | 相機頁 service 層、capture session、HUD 與資料流設計 |
