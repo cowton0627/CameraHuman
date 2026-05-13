@@ -43,3 +43,6 @@ fastlane/test_output
 
 # Logs
 *.log
+
+# Claude Code 專案規則（本機保留，不上 git）
+CLAUDE.md
