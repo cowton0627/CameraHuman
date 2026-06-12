@@ -11,14 +11,29 @@
 
 ### 1. 真機驗證 4:3 + 前後鏡頭 + 錄影方向
 
-模擬器看不到實機 capture 結果，重點驗：
+模擬器看不到實機 capture 結果，是後續所有相機改動的前置。重點驗：
 
 - 4:3 輸出裁切的 transform 在前鏡頭是否正確
 - 實機 `IRIS` / `FPS` / `SHUTTER` / `ISO` 值是否合理（多數 iPhone `IRIS` 是 fixed，會顯示 `FIXED`）
 - 橫直切換時 record button、lens stack、audio meter card 的位置是否對齊
 - 前鏡頭 `4:3` 與 transform 是否同步
 
-### 2. 把 Chat 接上真實 AI
+### 2. Quick Wins（每項 0.5~1 天，互不依賴，可穿插做）
+
+架構紅利：service 層已拆乾淨，這批多數只要在 `CameraSession` 加 public API + VC 接手勢。
+
+- **點擊對焦 / 曝光**：`CameraSession` 加 `focus(at:)` 包 `focusPointOfInterest` + `exposurePointOfInterest`，VC tap gesture 用 `captureDevicePointConverted` 轉座標。iOS 13 全支援。**需真機驗證**
+- **捏合縮放**：`CameraSession` 加 `setZoom(factor:)` 包 `videoZoomFactor`（用 `ramp(toVideoZoomFactor:)` 平滑），切鏡頭時重置 factor。**需真機驗證**
+- **Media 列表縮圖 + 片長**：`AVAssetImageGenerator` 抓首幀、`asset.duration` 算片長，記憶體 cache 即可
+- **Media 長按 context menu**：`UIContextMenuConfiguration` 給 Delete / Note / Link 一個可發現的入口，swipe 保留（已棄案：標題列 Edit 多選模式、每 row trash 圖示——視覺負擔重）
+- **分享 / 匯出到照片 App**：`UIActivityViewController` + 「儲存到照片」（`PHPhotoLibrary`，需加 `NSPhotoLibraryAddUsageDescription`）。素材目前被關在 `Documents/Recordings` 出不去，是工作流斷點
+
+### 3. 拍攝穩健性
+
+- **錄影中斷處理**：已確認 `CameraSession` 完全沒監聽 `AVCaptureSession.wasInterruptedNotification` / `interruptionEndedNotification` / `runtimeErrorNotification`。來電、切後台、被搶 capture 時至少要把已錄段落安全落檔 + toast 告知。**需真機驗證**（模擬器無法模擬來電搶 session）
+- **剩餘空間檢查**：`CameraRecorder` start 路徑檢查磁碟空間不足就擋；HUD 可加「可錄時間估計」chip
+
+### 4. 把 Chat 接上真實 AI
 
 [`ChatEngine`](./CameraHuman/Chat/ChatEngine.swift) 協定已預留 swap 點，目前實作 `KeywordChatEngine` 只是 keyword 比對。候選：
 
@@ -28,22 +43,22 @@
 | Gemini Flash 免費 tier | 中文強、免費額度高（~1500 RPD）、不綁卡 | 要 key、免費 tier 內容可能拿來訓練 |
 | Claude Haiku | 一致性最佳、中文一流 | 需綁卡、超過 $5 credit 後計費 |
 
-不論哪條：**API key 走 Settings 輸入 + Keychain，不寫死**。先用結構化 context（把 camera 設定 / 最近錄影 / planner 狀態塞進 system prompt）+ 「不確定就說不知道」的 instruction，能解 80% 場景。
-
-### 3. Media 滑動操作的 discoverability
-
-目前 `Delete` / `Note` / `Link` 藏在 swipe 手勢，新使用者完全猜不到。候選：
-
-- 長按 context menu（最少改動、最 iOS native）
-- 標題列加 `Edit` 進入多選刪除模式
-- 每 row 加 trash 圖示（最直接但視覺負擔重）
+不論哪條：**API key 走 Settings 輸入 + Keychain，不寫死**。建議順序：先做 KeychainStore + Settings 的 key 輸入 UI（不綁供應商），再接其中一家。組 system prompt context 的材料（`MediaLibraryReading` / `CameraSettings` / `ShotPlanner` protocol）已現成。先用結構化 context + 「不確定就說不知道」的 instruction，能解 80% 場景。
 
 ## Mid Term
 
+往「專業拍攝工具」走的設定與手動控制：
+
+- **FPS 選項（24 / 30 / 60）**：`Settings` 加選項，`CameraSession.configure` 挑支援該 fps 的 `activeFormat` 並設 `activeVideoMin/MaxFrameDuration`。拍片工作流的核心需求（24p）。**需真機驗證**
+- **4K 畫質選項**：`CameraSettingsStore` quality 加 `UHD` → `.hd4K3840x2160` preset，不支援機型 fallback。注意 4:3 錄後裁切的輸出時間會變長。**需真機驗證**
+- **曝光補償 / AE-AF 鎖定**（完整手動控制的第一步）：長按鎖定 AE/AF、滑桿調 `exposureTargetBias`。完整手動 ISO / 快門留到 Long Term。**需真機驗證**
+
+其他：
+
+- **HUD 狀態模型化**：chip 字串 array 換成型別化 struct，順手解 `IRIS=FIXED` 顯示策略（見 Technical Debt）。是後續 HUD 功能（可錄時間、警示色）的地基
 - 擴充 `Media` 的素材**分類、搜尋、標籤**——目前單層列表
 - `Chat` 與 `Media` 的 planner 連動從**單一 linked clip 升級為多素材 shot mapping**
 - 把 `TopHUDView` / `BottomHUDView` 從 `CameraViewController` 拆出（VC 還有 ~700 行可再瘦，但前一輪 service 拆分後 ROI 已下降，不急）
-- HUD 顯示值改成更清楚的**狀態模型**（目前是 chip 字串 array，無型別）
 - 補更多錄影成功 / 失敗狀態的細部提示
 
 ## Long Term
