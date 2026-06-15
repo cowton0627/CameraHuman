@@ -614,7 +614,9 @@ final class CameraViewController: UIViewController {
         controlSheet.isHidden = true
         view.addSubview(controlSheet)
 
-        let bottom = controlSheet.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 320)
+        // bottom 要 pin 到 safeArea（不是 view 底）：RootTabBarController 用 additionalSafeAreaInsets
+        // 把 dock 高度餵進 safeArea，pin 到 view.bottom 會讓面板下半被 dock 蓋住、滑桿被切掉。
+        let bottom = controlSheet.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 320)
         controlSheetBottomConstraint = bottom
         NSLayoutConstraint.activate([
             controlSheet.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
@@ -770,14 +772,19 @@ final class CameraViewController: UIViewController {
     private func showControlSheet() {
         view.layoutIfNeeded()
         controlSheet.isHidden = false
-        controlSheetBottomConstraint?.constant = -16
-        UIView.animate(withDuration: 0.25) { self.view.layoutIfNeeded() }
+        controlSheetBottomConstraint?.constant = -8
+        // 面板蓋住底部控制區，把錄影鍵 / 鏡頭按鈕淡出避免視覺重疊。
+        UIView.animate(withDuration: 0.25) {
+            self.bottomHUDView.alpha = 0
+            self.view.layoutIfNeeded()
+        }
     }
 
     private func hideControlSheet() {
         activeSheetControl = nil
         controlSheetBottomConstraint?.constant = 320
         UIView.animate(withDuration: 0.22, animations: {
+            self.bottomHUDView.alpha = 1
             self.view.layoutIfNeeded()
         }, completion: { _ in
             self.controlSheet.isHidden = true
