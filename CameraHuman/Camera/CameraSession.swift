@@ -270,4 +270,156 @@ final class CameraSession {
             self.captureSession.stopRunning()
         }
     }
+
+    // MARK: - Manual controls
+
+    /// 當前正在輸出的 video device。給 HUD 顯示與控制面板查能力範圍 / 當前值用。
+    var activeDevice: AVCaptureDevice? {
+        currentVideoInput?.device ?? currentLensOption?.device
+    }
+
+    /// 控制面板建滑桿範圍 / 擺放初始位置所需的 device 能力與當前值快照。
+    struct ManualCapabilities {
+        let minISO: Float
+        let maxISO: Float
+        let currentISO: Float
+        let minShutterSeconds: Double
+        let maxShutterSeconds: Double
+        let currentShutterSeconds: Double
+        let minBias: Float
+        let maxBias: Float
+        let currentBias: Float
+        let minKelvin: Float
+        let maxKelvin: Float
+        let supportsCustomExposure: Bool
+        let supportsWhiteBalanceLock: Bool
+        let frameRates: [Double]
+        let currentFrameRate: Double
+    }
+
+    /// iOS 沒有直接回報色溫上下限，用攝影常見的 2000K~8000K，實際 gains 再 clamp。
+    private static let whiteBalanceKelvinRange: ClosedRange<Float> = 2000...8000
+
+    /// 讀取當前 device 的能力與即時值。讀屬性不需 lock，可在 main thread 呼叫。
+    func manualCapabilities() -> ManualCapabilities? {
+        guard let device = activeDevice else { return nil }
+        let format = device.activeFormat
+        let ranges = format.videoSupportedFrameRateRanges
+        let minFrameRate = ranges.map(\.minFrameRate).min() ?? 0
+        let maxFrameRate = ranges.map(\.maxFrameRate).max() ?? 0
+        let currentFrameRate = ranges.map(\.maxFrameRate).max() ?? 0
+        let currentMaxDuration = device.activeVideoMaxFrameDuration
+        let resolvedFrameRate = currentMaxDuration.isValid && currentMaxDuration.seconds > 0
+            ? 1 / currentMaxDuration.seconds
+            : currentFrameRate
+
+        return ManualCapabilities(
+            minISO: format.minISO,
+            maxISO: format.maxISO,
+            currentISO: device.iso,
+            minShutterSeconds: CMTimeGetSeconds(format.minExposureDuration),
+            maxShutterSeconds: CMTimeGetSeconds(format.maxExposureDuration),
+            currentShutterSeconds: CMTimeGetSeconds(device.exposureDuration),
+            minBias: device.minExposureTargetBias,
+            maxBias: device.maxExposureTargetBias,
+            currentBias: device.exposureTargetBias,
+            minKelvin: Self.whiteBalanceKelvinRange.lowerBound,
+            maxKelvin: Self.whiteBalanceKelvinRange.upperBound,
+            supportsCustomExposure: device.isExposureModeSupported(.custom),
+            supportsWhiteBalanceLock: device.isWhiteBalanceModeSupported(.locked),
+            frameRates: CameraManualControls.supportedStandardFrameRates(minFrameRate: minFrameRate, maxFrameRate: maxFrameRate),
+            currentFrameRate: resolvedFrameRate
+        )
+    }
+
+    func setFrameRate(_ fps: Double, completion: @escaping (Bool) -> Void) {
+        queue.async { [weak self] in
+            guard let self, let device = self.activeDevice else {
+                DispatchQueue.main.async { completion(false) }
+                return
+            }
+            let supported = device.activeFormat.videoSupportedFrameRateRanges.contains {
+                fps >= $0.minFrameRate && fps <= $0.maxFrameRate
+            }
+            guard supported else {
+                DispatchQueue.main.async { completion(false) }
+                return
+            }
+            do {
+                try device.lockForConfiguration()
+                let duration = CameraManualControls.frameDuration(forFPS: fps)
+                device.activeVideoMinFrameDuration = duration
+                device.activeVideoMaxFrameDuration = duration
+                device.unlockForConfiguration()
+                DispatchQueue.main.async { completion(true) }
+            } catch {
+                DispatchQueue.main.async { completion(false) }
+            }
+        }
+    }
+
+    func setExposureBias(_ ev: Float, completion: (() -> Void)? = nil) {
+        queue.async { [weak self] in
+            defer { if let completion { DispatchQueue.main.async(execute: completion) } }
+            guard let device = self?.activeDevice else { return }
+            let clamped = CameraManualControls.clamp(ev, min: device.minExposureTargetBias, max: device.maxExposureTargetBias)
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.setExposureTargetBias(clamped)
+            device.unlockForConfiguration()
+        }
+    }
+
+    func setManualExposure(iso: Float, shutterSeconds: Double, completion: (() -> Void)? = nil) {
+        queue.async { [weak self] in
+            defer { if let completion { DispatchQueue.main.async(execute: completion) } }
+            guard let device = self?.activeDevice, device.isExposureModeSupported(.custom) else { return }
+            let format = device.activeFormat
+            let iso = CameraManualControls.clamp(iso, min: format.minISO, max: format.maxISO)
+            let seconds = CameraManualControls.clamp(
+                shutterSeconds,
+                min: CMTimeGetSeconds(format.minExposureDuration),
+                max: CMTimeGetSeconds(format.maxExposureDuration)
+            )
+            let duration = CMTimeMakeWithSeconds(seconds, preferredTimescale: 1_000_000)
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.setExposureModeCustom(duration: duration, iso: iso, completionHandler: nil)
+            device.unlockForConfiguration()
+        }
+    }
+
+    func setAutoExposure(completion: (() -> Void)? = nil) {
+        queue.async { [weak self] in
+            defer { if let completion { DispatchQueue.main.async(execute: completion) } }
+            guard let device = self?.activeDevice, device.isExposureModeSupported(.continuousAutoExposure) else { return }
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.exposureMode = .continuousAutoExposure
+            device.unlockForConfiguration()
+        }
+    }
+
+    func setWhiteBalance(kelvin: Float, completion: (() -> Void)? = nil) {
+        queue.async { [weak self] in
+            defer { if let completion { DispatchQueue.main.async(execute: completion) } }
+            guard let device = self?.activeDevice, device.isWhiteBalanceModeSupported(.locked) else { return }
+            let temperatureAndTint = AVCaptureDevice.WhiteBalanceTemperatureAndTintValues(temperature: kelvin, tint: 0)
+            var gains = device.deviceWhiteBalanceGains(for: temperatureAndTint)
+            let maxGain = device.maxWhiteBalanceGain
+            gains.redGain = Swift.max(1, Swift.min(maxGain, gains.redGain))
+            gains.greenGain = Swift.max(1, Swift.min(maxGain, gains.greenGain))
+            gains.blueGain = Swift.max(1, Swift.min(maxGain, gains.blueGain))
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.setWhiteBalanceModeLocked(with: gains, completionHandler: nil)
+            device.unlockForConfiguration()
+        }
+    }
+
+    func setAutoWhiteBalance(completion: (() -> Void)? = nil) {
+        queue.async { [weak self] in
+            defer { if let completion { DispatchQueue.main.async(execute: completion) } }
+            guard let device = self?.activeDevice, device.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) else { return }
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.whiteBalanceMode = .continuousAutoWhiteBalance
+            device.unlockForConfiguration()
+        }
+    }
 }
