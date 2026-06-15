@@ -40,9 +40,11 @@
 ### Media
 
 - 錄影檔儲存到 `Documents/Recordings`
-- 列表顯示檔名 + 建立時間 + 檔案大小 + 註記
+- 列表顯示縮圖 + 檔名 + 建立時間 + 片長 + 檔案大小 + 註記（縮圖與片長由 `MediaThumbnailProvider` 背景產生並 cache）
 - 點開可播放 `.mov`
 - 滑動 row 露出 Delete / Note / Link
+- 長按 row 開 context menu：Note / Link / Share / Save to Photos / Delete
+- 分享（`UIActivityViewController`）與匯出到照片 App（`PHPhotoLibrary`）
 - `4:3` 模式錄影在儲存時做輸出裁切（`MediaLibrary` 內）
 
 ### Chat
@@ -111,7 +113,8 @@ CameraHuman/
 │   └── Views/PlannerCardView.swift        checklist / notes / action items 卡片
 ├── Media/
 │   ├── MediaViewController.swift
-│   └── MediaLibrary.swift                 儲存 + metadata + 4:3 裁切
+│   ├── MediaLibrary.swift                 儲存 + metadata + 4:3 裁切
+│   └── MediaThumbnailProvider.swift       縮圖 + 片長（背景產生 + NSCache）
 ├── Settings/
 │   ├── SettingsViewController.swift
 │   └── CameraSettingsStore.swift          UserDefaults persist + 變更通知

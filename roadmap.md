@@ -24,9 +24,6 @@
 
 - **點擊對焦 / 曝光**：`CameraSession` 加 `focus(at:)` 包 `focusPointOfInterest` + `exposurePointOfInterest`，VC tap gesture 用 `captureDevicePointConverted` 轉座標。iOS 13 全支援。**需真機驗證**
 - **捏合縮放**：`CameraSession` 加 `setZoom(factor:)` 包 `videoZoomFactor`（用 `ramp(toVideoZoomFactor:)` 平滑），切鏡頭時重置 factor。**需真機驗證**
-- **Media 列表縮圖 + 片長**：`AVAssetImageGenerator` 抓首幀、`asset.duration` 算片長，記憶體 cache 即可
-- **Media 長按 context menu**：`UIContextMenuConfiguration` 給 Delete / Note / Link 一個可發現的入口，swipe 保留（已棄案：標題列 Edit 多選模式、每 row trash 圖示——視覺負擔重）
-- **分享 / 匯出到照片 App**：`UIActivityViewController` + 「儲存到照片」（`PHPhotoLibrary`，需加 `NSPhotoLibraryAddUsageDescription`）。素材目前被關在 `Documents/Recordings` 出不去，是工作流斷點
 
 ### 3. 拍攝穩健性
 
@@ -91,3 +88,4 @@
 - ✅ 鏡頭切換優化：點同鏡頭直接 noop、`AVCaptureVideoPreviewLayer` 只建一次、同 device 不重建 input、加 `isConfiguring` flag 避免重疊 configure 排隊
 - ✅ 抽 `MediaLibraryReading` / `CameraSettings` / `ShotPlanner` protocol，`KeywordChatEngine` 改用 protocol 注入；補第一批 unit test（`KeywordChatEngineTests`，15 個 case 涵蓋所有 keyword 分支 / fallback / 4:3 vs 16:9 / spy 驗證）
 - ✅ 補三組 unit test：`CameraDiagnosticsTests`（12）/ `ShotPlannerStoreTests`（14）/ `CameraSettingsStoreTests`（14），總計 **55 tests passing**。Store 的 init 加 `UserDefaults` 注入點讓測試用獨立 suite 隔離
+- ✅ Media Quick Wins 三項（模擬器驗過）：列表縮圖 + 片長（抽 `MediaThumbnailProvider`，`AVAssetImageGenerator` 背景產圖 + NSCache）、長按 `UIContextMenuConfiguration`（Note / Link / Share / Save to Photos / Delete）、分享（`UIActivityViewController`）與匯出到照片（`PHPhotoLibrary`，補 `NSPhotoLibraryAddUsageDescription`）。swipe 操作保留
