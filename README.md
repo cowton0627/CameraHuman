@@ -30,6 +30,11 @@
 - 上方拍攝 HUD
   - 第一排：`FORMAT` / `FRAME` / `TIME`（錄影中變 `REC`）
   - 第二排：`LENS` / `FPS` / `SHUTTER` / `IRIS` / `ISO` / `WB`
+- 手動控制（點 HUD chip 調整，**需真機**）
+  - `FPS` 點擊循環 24→30→60
+  - `ISO` / `SHUTTER` 開曝光面板：AUTO（EV 補償滑桿）/ MANUAL（ISO + 快門滑桿）
+  - `WB` 開白平衡面板：AUTO / 色溫滑桿
+  - service API 在 `CameraSession`，純換算在 `CameraManualControls`，面板 UI 為 `ManualControlSheetView`
 - 錄影鍵 + 狀態機，過渡期間自動禁用避免重複點擊
 - 即時音量監看（綠 / 黃 / 紅三段顏色 + dB 數值）
 - `i` 診斷資訊（5 行精簡狀態 + 可複製）
@@ -101,11 +106,13 @@ CameraHuman/
 │   ├── CameraRecorder.swift               錄影狀態機 + delegate
 │   ├── AudioLevelMonitor.swift            音量輪詢
 │   ├── CameraDiagnostics.swift            i 診斷報告
+│   ├── CameraManualControls.swift         手動控制純換算（FPS/clamp/滑桿映射）可測
 │   ├── HUDFormatters.swift                AVCaptureDevice → 顯示文字
 │   ├── AVCaptureVideoOrientation+Init.swift
 │   └── Views/
 │       ├── AspectMaskView.swift           預覽外殼 + 構圖框 + 三分線
 │       ├── AudioMeterCardView.swift       音量計卡片
+│       ├── ManualControlSheetView.swift   底部手動控制面板（滑桿 + AUTO/MANUAL）
 │       └── ToastView.swift                提示泡泡
 ├── Chat/
 │   ├── ChatViewController.swift           UI 組裝 + 訊息列表

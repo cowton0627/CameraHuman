@@ -40,6 +40,24 @@ final class CameraViewController: UIViewController {
 
     private var lastSavedRecording: MediaRecording?
 
+    // MARK: - Manual control state
+
+    /// HUD chip 點下去要打開哪種控制。`nil` = 唯讀（如 LENS / IRIS）。
+    private enum HUDControl { case fps, exposure, whiteBalance }
+
+    private let controlSheet = ManualControlSheetView()
+    private var controlSheetBottomConstraint: NSLayoutConstraint?
+    /// 重建 chip 時把可點 chip 對應到要開的控制。
+    private var chipControls: [UIView: HUDControl] = [:]
+    /// 曝光面板狀態：手動模式下兩條滑桿要一起送進 setManualExposure，所以兩個值都要記住。
+    private var exposureIsAuto = true
+    private var manualISO: Float = 100
+    private var manualShutterSeconds: Double = 1.0 / 60.0
+    private var whiteBalanceIsAuto = true
+    private var manualKelvin: Float = 5000
+    /// 面板目前開的是哪種控制（AUTO/MANUAL 切換時要知道作用到誰）。
+    private var activeSheetControl: HUDControl?
+
     override var prefersStatusBarHidden: Bool { true }
 
     // MARK: - Lifecycle
@@ -56,6 +74,7 @@ final class CameraViewController: UIViewController {
         )
 
         configureUI()
+        setupControlSheet()
         wireServices()
 
         // 把 preview layer 建好就掛上去（綁到 session）。session 之後增刪 input 它會自動跟著刷新，
@@ -217,12 +236,12 @@ final class CameraViewController: UIViewController {
         previewView.setGuidesVisible(settings.showGrid)
         updatePrimaryHUD()
         replaceTechnicalChips(with: [
-            "LENS --",
-            "FPS --",
-            "SHUTTER --",
-            "IRIS FIXED",
-            "ISO --",
-            "WB --"
+            (title: "LENS", value: "--", control: nil),
+            (title: "FPS", value: "--", control: nil),
+            (title: "SHUTTER", value: "--", control: nil),
+            (title: "IRIS", value: "FIXED", control: nil),
+            (title: "ISO", value: "--", control: nil),
+            (title: "WB", value: "--", control: nil)
         ])
         handleAudioMeter(level: 0, trackCount: 0)
         updateRecordButtonAppearance()
@@ -458,12 +477,12 @@ final class CameraViewController: UIViewController {
     private func updateHUD(for device: AVCaptureDevice, lensTitle: String) {
         updatePrimaryHUD()
         replaceTechnicalChips(with: [
-            "LENS \(lensTitle)",
-            "FPS \(HUDFormatters.frameRate(for: device))",
-            "SHUTTER \(HUDFormatters.shutter(for: device))",
-            "IRIS \(HUDFormatters.iris(for: device))",
-            "ISO \(String(format: "%.0f", device.iso))",
-            "WB \(HUDFormatters.whiteBalance(for: device))"
+            (title: "LENS", value: lensTitle, control: nil),
+            (title: "FPS", value: HUDFormatters.frameRate(for: device), control: .fps),
+            (title: "SHUTTER", value: HUDFormatters.shutter(for: device), control: .exposure),
+            (title: "IRIS", value: HUDFormatters.iris(for: device), control: nil),
+            (title: "ISO", value: String(format: "%.0f", device.iso), control: .exposure),
+            (title: "WB", value: HUDFormatters.whiteBalance(for: device), control: .whiteBalance)
         ])
 
         let positionText = session.currentPosition == .front ? "FRONT" : "BACK"
@@ -472,13 +491,14 @@ final class CameraViewController: UIViewController {
         bottomStatusLabel.text = "\(qualityText()) • \(settings.aspectRatio.displayTitle) • \(settings.aspectRatio == .ratio4x3 ? "Crop on save" : "Native frame")"
     }
 
-    private func replaceTechnicalChips(with titles: [String]) {
+    private func replaceTechnicalChips(with chips: [(title: String, value: String, control: HUDControl?)]) {
         for arrangedView in technicalStatusStackView.arrangedSubviews {
             technicalStatusStackView.removeArrangedSubview(arrangedView)
             arrangedView.removeFromSuperview()
         }
+        chipControls.removeAll()
 
-        for title in titles {
+        for chip in chips {
             let label = UILabel()
             label.textAlignment = .center
             label.numberOfLines = 2
@@ -486,8 +506,20 @@ final class CameraViewController: UIViewController {
             label.minimumScaleFactor = 0.72
             label.font = .monospacedSystemFont(ofSize: 9, weight: .medium)
             label.textColor = .white
-            label.backgroundColor = .clear
-            label.attributedText = technicalChipText(for: title)
+            label.attributedText = technicalChipText(title: chip.title, value: chip.value)
+
+            if let control = chip.control {
+                // 可調的 chip 給淡底色 + 圓角當「可按」暗示，並掛 tap。
+                label.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+                label.layer.cornerRadius = 6
+                label.clipsToBounds = true
+                label.isUserInteractionEnabled = true
+                label.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(technicalChipTapped(_:))))
+                chipControls[label] = control
+            } else {
+                label.backgroundColor = .clear
+            }
+
             technicalStatusStackView.addArrangedSubview(label)
         }
     }
@@ -549,10 +581,8 @@ final class CameraViewController: UIViewController {
         return label
     }
 
-    private func technicalChipText(for rawText: String) -> NSAttributedString {
-        let parts = rawText.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-        let title = String(parts.first ?? "")
-        let value = parts.count > 1 ? String(parts[1]) : "--"
+    private func technicalChipText(title: String, value: String) -> NSAttributedString {
+        let value = value.isEmpty ? "--" : value
 
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
@@ -576,6 +606,188 @@ final class CameraViewController: UIViewController {
             )
         )
         return attributed
+    }
+
+    // MARK: - Manual controls
+
+    private func setupControlSheet() {
+        controlSheet.isHidden = true
+        view.addSubview(controlSheet)
+
+        let bottom = controlSheet.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 320)
+        controlSheetBottomConstraint = bottom
+        NSLayoutConstraint.activate([
+            controlSheet.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            controlSheet.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            bottom
+        ])
+
+        controlSheet.onSliderChanged = { [weak self] key, value in
+            self?.handleSliderChanged(key: key, value: value)
+        }
+        controlSheet.onModeChanged = { [weak self] isAuto in
+            self?.handleSheetModeChanged(isAuto: isAuto)
+        }
+        controlSheet.onClose = { [weak self] in
+            self?.hideControlSheet()
+        }
+    }
+
+    @objc private func technicalChipTapped(_ gesture: UITapGestureRecognizer) {
+        guard let view = gesture.view, let control = chipControls[view] else { return }
+        switch control {
+        case .fps: cycleFrameRate()
+        case .exposure: presentExposureSheet()
+        case .whiteBalance: presentWhiteBalanceSheet()
+        }
+    }
+
+    private func cycleFrameRate() {
+        guard let caps = session.manualCapabilities() else {
+            toastView.show("此鏡頭無法調整")
+            return
+        }
+        guard let next = CameraManualControls.nextFrameRate(after: caps.currentFrameRate, in: caps.frameRates) else {
+            toastView.show("不支援切換幀率")
+            return
+        }
+        session.setFrameRate(next) { [weak self] success in
+            guard let self else { return }
+            if success {
+                self.refreshTechnicalHUD()
+                self.toastView.show("FPS \(Int(next))")
+            } else {
+                self.toastView.show("設定幀率失敗")
+            }
+        }
+    }
+
+    private func presentExposureSheet() {
+        guard let caps = session.manualCapabilities() else {
+            toastView.show("此鏡頭無法手動控制")
+            return
+        }
+        activeSheetControl = .exposure
+        manualISO = CameraManualControls.clamp(caps.currentISO, min: caps.minISO, max: caps.maxISO)
+        manualShutterSeconds = CameraManualControls.clamp(caps.currentShutterSeconds, min: caps.minShutterSeconds, max: caps.maxShutterSeconds)
+        configureExposureSheet(caps: caps)
+        showControlSheet()
+    }
+
+    private func presentWhiteBalanceSheet() {
+        guard let caps = session.manualCapabilities() else {
+            toastView.show("此鏡頭無法手動控制")
+            return
+        }
+        guard caps.supportsWhiteBalanceLock else {
+            toastView.show("此鏡頭不支援鎖定白平衡")
+            return
+        }
+        activeSheetControl = .whiteBalance
+        manualKelvin = CameraManualControls.clamp(manualKelvin, min: caps.minKelvin, max: caps.maxKelvin)
+        configureWhiteBalanceSheet(caps: caps)
+        showControlSheet()
+    }
+
+    private func configureExposureSheet(caps: CameraSession.ManualCapabilities) {
+        if exposureIsAuto {
+            let ev = ManualControlSheetView.SliderModel(
+                key: "EV", title: "EV",
+                minValue: caps.minBias, maxValue: caps.maxBias, value: caps.currentBias,
+                display: { String(format: "%+.1f", $0) }
+            )
+            controlSheet.configure(title: "曝光 EXPOSURE", showsModeToggle: true, isAuto: true, sliders: [ev])
+        } else {
+            let iso = ManualControlSheetView.SliderModel(
+                key: "ISO", title: "ISO",
+                minValue: caps.minISO, maxValue: caps.maxISO, value: manualISO,
+                display: { String(format: "%.0f", $0) }
+            )
+            let shutter = ManualControlSheetView.SliderModel(
+                key: "SHUTTER", title: "快門",
+                minValue: Float(caps.minShutterSeconds), maxValue: Float(caps.maxShutterSeconds), value: Float(manualShutterSeconds),
+                display: { CameraManualControls.shutterText(forSeconds: Double($0)) }
+            )
+            controlSheet.configure(title: "曝光 EXPOSURE", showsModeToggle: caps.supportsCustomExposure, isAuto: false, sliders: [iso, shutter])
+        }
+    }
+
+    private func configureWhiteBalanceSheet(caps: CameraSession.ManualCapabilities) {
+        if whiteBalanceIsAuto {
+            controlSheet.configure(title: "白平衡 WHITE BALANCE", showsModeToggle: true, isAuto: true, sliders: [])
+        } else {
+            let kelvin = ManualControlSheetView.SliderModel(
+                key: "WB", title: "色溫",
+                minValue: caps.minKelvin, maxValue: caps.maxKelvin, value: manualKelvin,
+                display: { String(format: "%.0fK", $0) }
+            )
+            controlSheet.configure(title: "白平衡 WHITE BALANCE", showsModeToggle: true, isAuto: false, sliders: [kelvin])
+        }
+    }
+
+    private func handleSliderChanged(key: String, value: Float) {
+        switch key {
+        case "EV":
+            session.setExposureBias(value)
+        case "ISO":
+            manualISO = value
+            session.setManualExposure(iso: manualISO, shutterSeconds: manualShutterSeconds)
+        case "SHUTTER":
+            manualShutterSeconds = Double(value)
+            session.setManualExposure(iso: manualISO, shutterSeconds: manualShutterSeconds)
+        case "WB":
+            manualKelvin = value
+            session.setWhiteBalance(kelvin: value)
+        default:
+            break
+        }
+    }
+
+    private func handleSheetModeChanged(isAuto: Bool) {
+        guard let control = activeSheetControl, let caps = session.manualCapabilities() else { return }
+        switch control {
+        case .exposure:
+            exposureIsAuto = isAuto
+            if isAuto {
+                session.setAutoExposure()
+            } else {
+                session.setManualExposure(iso: manualISO, shutterSeconds: manualShutterSeconds)
+            }
+            configureExposureSheet(caps: caps)
+        case .whiteBalance:
+            whiteBalanceIsAuto = isAuto
+            if isAuto {
+                session.setAutoWhiteBalance()
+            } else {
+                session.setWhiteBalance(kelvin: manualKelvin)
+            }
+            configureWhiteBalanceSheet(caps: caps)
+        case .fps:
+            break
+        }
+    }
+
+    private func showControlSheet() {
+        view.layoutIfNeeded()
+        controlSheet.isHidden = false
+        controlSheetBottomConstraint?.constant = -16
+        UIView.animate(withDuration: 0.25) { self.view.layoutIfNeeded() }
+    }
+
+    private func hideControlSheet() {
+        activeSheetControl = nil
+        controlSheetBottomConstraint?.constant = 320
+        UIView.animate(withDuration: 0.22, animations: {
+            self.view.layoutIfNeeded()
+        }, completion: { _ in
+            self.controlSheet.isHidden = true
+            self.refreshTechnicalHUD()
+        })
+    }
+
+    private func refreshTechnicalHUD() {
+        guard let device = session.activeDevice else { return }
+        updateHUD(for: device, lensTitle: session.currentLensOption?.title ?? "--")
     }
 
     // MARK: - Lens buttons

@@ -42,13 +42,18 @@
 
 不論哪條：**API key 走 Settings 輸入 + Keychain，不寫死**。建議順序：先做 KeychainStore + Settings 的 key 輸入 UI（不綁供應商），再接其中一家。組 system prompt context 的材料（`MediaLibraryReading` / `CameraSettings` / `ShotPlanner` protocol）已現成。先用結構化 context + 「不確定就說不知道」的 instruction，能解 80% 場景。
 
+## 待真機驗證（程式碼已完成，Phase 3）
+
+> 這些已實作 + build + 單元測試過，但**模擬器沒相機 / 沒麥克風完全驗不了**，要拿 iPhone 跑才算完成。
+
+- **手動控制（FPS / 曝光補償 EV / 手動曝光 ISO+快門 / 白平衡色溫）**：點 HUD chip 調整。FPS chip 點擊循環 24→30→60；ISO/SHUTTER 開「曝光面板」（AUTO 顯示 EV 滑桿 / MANUAL 顯示 ISO+快門滑桿）；WB 開「白平衡面板」（AUTO / 色溫滑桿）。service API 在 `CameraSession`（`setFrameRate` / `setExposureBias` / `setManualExposure` / `setWhiteBalance` 等），純換算邏輯在 `CameraManualControls`，UI 在 `ManualControlSheetView`。真機要驗：各參數是否真的生效、滑桿範圍合理、切鏡頭後要不要重置、快門滑桿線性度是否好用。
+
 ## Mid Term
 
-往「專業拍攝工具」走的設定與手動控制：
+往「專業拍攝工具」走：
 
-- **FPS 選項（24 / 30 / 60）**：`Settings` 加選項，`CameraSession.configure` 挑支援該 fps 的 `activeFormat` 並設 `activeVideoMin/MaxFrameDuration`。拍片工作流的核心需求（24p）。**需真機驗證**
 - **4K 畫質選項**：`CameraSettingsStore` quality 加 `UHD` → `.hd4K3840x2160` preset，不支援機型 fallback。注意 4:3 錄後裁切的輸出時間會變長。**需真機驗證**
-- **曝光補償 / AE-AF 鎖定**（完整手動控制的第一步）：長按鎖定 AE/AF、滑桿調 `exposureTargetBias`。完整手動 ISO / 快門留到 Long Term。**需真機驗證**
+- **AE/AF 鎖定**：長按預覽鎖定當前曝光 / 對焦點。手動控制已有，這是補互動。**需真機驗證**
 
 其他：
 
@@ -60,7 +65,7 @@
 
 ## Long Term
 
-- 更完整的手動控制：曝光、對焦、白平衡
+- 對焦控制：點擊對焦 + 手動對焦距離（曝光 / 白平衡的手動控制已做，見「待真機驗證」）
 - 多軌音訊策略：不只 level meter，要能切換 input、可能多軌錄音
 - 真正的 AI / 雲端 `Chat` 工作流：含 system prompt 注入 app 狀態 + tool calling（讓模型直接呼叫 `list_recordings()` / `get_settings()` 等）
 

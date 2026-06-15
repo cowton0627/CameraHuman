@@ -155,3 +155,25 @@
 - `Base.lproj/LaunchScreen.storyboard` 已經存在，補 key 即可，不必重做
 
 **放棄**：刪掉 storyboard 改用純 SwiftUI launch screen（要改更多東西）；忽略黑邊（不是真的修，使用者持續看到）。
+
+---
+
+## 13. 手動控制：service API + 純邏輯分層，UI 用「混用」互動
+
+**做法**：手動控制（FPS / 曝光補償 / 手動曝光 ISO+快門 / 白平衡色溫）切三層：
+- [`CameraManualControls`](./CameraHuman/Camera/CameraManualControls.swift) — 純換算 / clamp / 滑桿映射，**不依賴 `AVCaptureDevice`**，可單元測試
+- [`CameraSession`](./CameraHuman/Camera/CameraSession.swift) — `setFrameRate` / `setExposureBias` / `setManualExposure` / `setWhiteBalance` 等 public API，全走 `sessionQueue` + `lockForConfiguration`；`manualCapabilities()` 回傳能力與當前值快照給 UI
+- [`ManualControlSheetView`](./CameraHuman/Camera/Views/ManualControlSheetView.swift) — 資料驅動的底部面板，不知道相機細節，純接 callback
+
+**UI 互動採「混用」**：
+- **離散值（FPS）**：點 chip 直接循環 24→30→60，不開面板——三檔而已，循環最快
+- **連續值（ISO / 快門 / EV / 色溫）**：點 chip 從底部彈滑桿面板——值域連續，非滑桿不可
+
+**為什麼**：
+- 把可測的換算邏輯抽離 device 互動，是這個 repo 既有的分層慣例（如 `HUDFormatters` / `CameraDiagnostics`），手動控制沿用
+- AV 設定一律走 service + sessionQueue，VC 不碰 `AVCaptureDevice`（DECISIONS #4 的延伸）
+- 曝光面板用 AUTO/MANUAL segmented：AUTO 下是「自動曝光 + EV 補償」，MANUAL 下是「custom ISO+快門」，兩者互斥，用模式切換比塞一堆滑桿清楚
+
+**放棄**：全部 chip 都用面板（FPS 三檔用面板多一次點擊，不划算）；常駐一排控制（佔預覽空間，四項全擺更擠）；點 chip 循環連續值（ISO 上百個值點不完，不可行）。
+
+**權衡 / 待驗**：模擬器沒相機完全驗不了，參數是否生效、滑桿範圍、切鏡頭重置、快門滑桿線性度都要真機驗（見 `roadmap.md`「待真機驗證」）。快門目前用「秒」當滑桿值線性映射，慢速區會佔掉大半行程，真機體驗可能要改非線性。
