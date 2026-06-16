@@ -3,6 +3,12 @@ import CoreMedia
 
 enum HUDFormatters {
     static func frameRate(for device: AVCaptureDevice) -> String {
+        // 優先讀「實際生效的幀率」（手動鎖定後 activeVideoMaxFrameDuration 會反映），
+        // 沒設定時才 fallback 到 format 支援的最高幀率。
+        let maxDuration = device.activeVideoMaxFrameDuration
+        if maxDuration.isValid, CMTimeGetSeconds(maxDuration) > 0 {
+            return String(format: "%.0f", 1 / CMTimeGetSeconds(maxDuration))
+        }
         let maxFrameRate = device.activeFormat.videoSupportedFrameRateRanges.map(\.maxFrameRate).max() ?? 0
         return String(format: "%.0f", maxFrameRate)
     }
