@@ -119,4 +119,75 @@ final class CameraManualControlsTests: XCTestCase {
     func test_shutterText_zero_isAuto() {
         XCTAssertEqual(CameraManualControls.shutterText(forSeconds: 0), "AUTO")
     }
+
+    // MARK: - ISO stops
+
+    func test_isoStops_keepsHardwareEndpoints() {
+        let stops = CameraManualControls.isoStops(min: 34, max: 3072)
+        XCTAssertEqual(stops.first, 34)
+        XCTAssertEqual(stops.last, 3072)
+    }
+
+    func test_isoStops_insertsStandardStopsBetween() {
+        let stops = CameraManualControls.isoStops(min: 34, max: 3072)
+        XCTAssertTrue(stops.contains(100))
+        XCTAssertTrue(stops.contains(800))
+        // 端點之外的標準值不應出現
+        XCTAssertFalse(stops.contains(32))
+        XCTAssertFalse(stops.contains(4000))
+    }
+
+    func test_isoStops_lowEndIncludesSubHundred() {
+        let stops = CameraManualControls.isoStops(min: 34, max: 3072)
+        XCTAssertTrue(stops.contains(40))
+        XCTAssertTrue(stops.contains(80))
+    }
+
+    func test_isoStops_isAscending() {
+        let stops = CameraManualControls.isoStops(min: 34, max: 3072)
+        XCTAssertEqual(stops, stops.sorted())
+    }
+
+    // MARK: - Shutter angle
+
+    func test_shutterSeconds_180at24_isOneOver48() {
+        let seconds = CameraManualControls.shutterSeconds(forAngle: 180, fps: 24)
+        XCTAssertEqual(seconds, 1.0 / 48.0, accuracy: 1e-9)
+    }
+
+    func test_shutterSeconds_180at30_isOneOver60() {
+        let seconds = CameraManualControls.shutterSeconds(forAngle: 180, fps: 30)
+        XCTAssertEqual(seconds, 1.0 / 60.0, accuracy: 1e-9)
+    }
+
+    func test_shutterSeconds_90at24_isOneOver96() {
+        let seconds = CameraManualControls.shutterSeconds(forAngle: 90, fps: 24)
+        XCTAssertEqual(seconds, 1.0 / 96.0, accuracy: 1e-9)
+    }
+
+    func test_nearestShutterAngle_roundsToStandard() {
+        // 1/48 @ 24fps 就是 180°
+        XCTAssertEqual(CameraManualControls.nearestShutterAngle(forSeconds: 1.0 / 48.0, fps: 24), 180)
+        // 1/50 @ 24fps 最接近 172.8°
+        XCTAssertEqual(CameraManualControls.nearestShutterAngle(forSeconds: 1.0 / 50.0, fps: 24), 172.8)
+    }
+
+    func test_angleText_integerVsFractional() {
+        XCTAssertEqual(CameraManualControls.angleText(180), "180°")
+        XCTAssertEqual(CameraManualControls.angleText(172.8), "172.8°")
+    }
+
+    // MARK: - Flicker (60Hz)
+
+    func test_flickerSafe60Hz_oneOver60_isSafe() {
+        XCTAssertTrue(CameraManualControls.isFlickerSafe60Hz(seconds: 1.0 / 60.0))
+    }
+
+    func test_flickerSafe60Hz_oneOver120_isSafe() {
+        XCTAssertTrue(CameraManualControls.isFlickerSafe60Hz(seconds: 1.0 / 120.0))
+    }
+
+    func test_flickerSafe60Hz_oneOver48_isNotSafe() {
+        XCTAssertFalse(CameraManualControls.isFlickerSafe60Hz(seconds: 1.0 / 48.0))
+    }
 }

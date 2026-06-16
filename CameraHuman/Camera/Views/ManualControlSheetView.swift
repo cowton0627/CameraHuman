@@ -14,8 +14,21 @@ final class ManualControlSheetView: UIView {
         let minValue: Float
         let maxValue: Float
         let value: Float
-        /// 把滑桿當前值轉成顯示文字（例如 ISO 取整、快門變 1/N、色溫加 K）。
+        /// 離散段位值。`nil` = 連續滑桿（如 EV / 色溫）；有值 = 吸附段位（如 ISO / 快門角度）。
+        /// 段位模式下滑桿走的是 index（0...count-1），回傳給 callback 的是 `steps[index]` 實際值。
+        let steps: [Float]?
+        /// 把當前值轉成顯示文字。段位模式收到的是 `steps[index]` 實際值。
         let display: (Float) -> String
+
+        init(key: String, title: String, minValue: Float, maxValue: Float, value: Float, steps: [Float]? = nil, display: @escaping (Float) -> String) {
+            self.key = key
+            self.title = title
+            self.minValue = minValue
+            self.maxValue = maxValue
+            self.value = value
+            self.steps = steps
+            self.display = display
+        }
     }
 
     /// 拖動滑桿（持續觸發）。
@@ -130,17 +143,28 @@ final class ManualControlSheetView: UIView {
         valueLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .semibold)
         valueLabel.textColor = .white
         valueLabel.textAlignment = .right
-        valueLabel.text = model.display(model.value)
+        valueLabel.adjustsFontSizeToFitWidth = true
+        valueLabel.minimumScaleFactor = 0.7
         valueLabel.setContentHuggingPriority(.required, for: .horizontal)
-        valueLabel.widthAnchor.constraint(equalToConstant: 64).isActive = true
+        valueLabel.widthAnchor.constraint(equalToConstant: 104).isActive = true
         valueLabels[model.key] = valueLabel
 
         let slider = UISlider()
-        slider.minimumValue = model.minValue
-        slider.maximumValue = model.maxValue
-        slider.value = model.value
         slider.minimumTrackTintColor = .systemBlue
         slider.accessibilityIdentifier = model.key
+        if let steps = model.steps, !steps.isEmpty {
+            // 段位模式：滑桿走 index，初始擺到 >= 當前值的第一個段位。
+            slider.minimumValue = 0
+            slider.maximumValue = Float(steps.count - 1)
+            let index = steps.firstIndex(where: { $0 >= model.value }) ?? (steps.count - 1)
+            slider.value = Float(index)
+            valueLabel.text = model.display(steps[index])
+        } else {
+            slider.minimumValue = model.minValue
+            slider.maximumValue = model.maxValue
+            slider.value = model.value
+            valueLabel.text = model.display(model.value)
+        }
         slider.addTarget(self, action: #selector(sliderChanged(_:)), for: .valueChanged)
 
         let row = UIStackView(arrangedSubviews: [titleLabel, slider, valueLabel])
@@ -157,11 +181,18 @@ final class ManualControlSheetView: UIView {
     private var sliderModelsByKey: [String: SliderModel] = [:]
 
     @objc private func sliderChanged(_ sender: UISlider) {
-        guard let key = sender.accessibilityIdentifier else { return }
-        if let model = sliderModelsByKey[key] {
-            valueLabels[key]?.text = model.display(sender.value)
+        guard let key = sender.accessibilityIdentifier, let model = sliderModelsByKey[key] else { return }
+        let resolvedValue: Float
+        if let steps = model.steps, !steps.isEmpty {
+            // 吸附到最近段位：把滑桿值 round 成 index，再寫回滑桿讓拇指吸住。
+            let index = max(0, min(steps.count - 1, Int(sender.value.rounded())))
+            sender.value = Float(index)
+            resolvedValue = steps[index]
+        } else {
+            resolvedValue = sender.value
         }
-        onSliderChanged?(key, sender.value)
+        valueLabels[key]?.text = model.display(resolvedValue)
+        onSliderChanged?(key, resolvedValue)
     }
 
     @objc private func modeChanged() {

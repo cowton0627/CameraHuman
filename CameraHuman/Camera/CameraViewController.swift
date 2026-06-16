@@ -52,7 +52,9 @@ final class CameraViewController: UIViewController {
     /// 曝光面板狀態：手動模式下兩條滑桿要一起送進 setManualExposure，所以兩個值都要記住。
     private var exposureIsAuto = true
     private var manualISO: Float = 100
-    private var manualShutterSeconds: Double = 1.0 / 60.0
+    /// 快門以「角度」為準（電影機慣例），實際秒數依當前 fps 換算。
+    private var manualShutterAngle: Double = CameraManualControls.recommendedShutterAngle
+    private var manualFPS: Double = 30
     private var whiteBalanceIsAuto = true
     private var manualKelvin: Float = 5000
     /// 面板目前開的是哪種控制（AUTO/MANUAL 切換時要知道作用到誰）。
@@ -670,8 +672,9 @@ final class CameraViewController: UIViewController {
             return
         }
         activeSheetControl = .exposure
+        manualFPS = caps.currentFrameRate > 0 ? caps.currentFrameRate : 30
         manualISO = CameraManualControls.clamp(caps.currentISO, min: caps.minISO, max: caps.maxISO)
-        manualShutterSeconds = CameraManualControls.clamp(caps.currentShutterSeconds, min: caps.minShutterSeconds, max: caps.maxShutterSeconds)
+        manualShutterAngle = CameraManualControls.nearestShutterAngle(forSeconds: caps.currentShutterSeconds, fps: manualFPS)
         configureExposureSheet(caps: caps)
         showControlSheet()
     }
@@ -700,15 +703,26 @@ final class CameraViewController: UIViewController {
             )
             controlSheet.configure(title: "曝光 EXPOSURE", showsModeToggle: true, isAuto: true, sliders: [ev])
         } else {
+            let isoStops = CameraManualControls.isoStops(min: caps.minISO, max: caps.maxISO)
             let iso = ManualControlSheetView.SliderModel(
                 key: "ISO", title: "ISO",
                 minValue: caps.minISO, maxValue: caps.maxISO, value: manualISO,
+                steps: isoStops,
                 display: { String(format: "%.0f", $0) }
             )
+            let fps = manualFPS
+            let angleSteps = CameraManualControls.shutterAngles.map { Float($0) }
             let shutter = ManualControlSheetView.SliderModel(
                 key: "SHUTTER", title: "快門",
-                minValue: Float(caps.minShutterSeconds), maxValue: Float(caps.maxShutterSeconds), value: Float(manualShutterSeconds),
-                display: { CameraManualControls.shutterText(forSeconds: Double($0)) }
+                minValue: 0, maxValue: Float(max(0, angleSteps.count - 1)), value: Float(manualShutterAngle),
+                steps: angleSteps,
+                display: { angleValue in
+                    let angle = Double(angleValue)
+                    let seconds = CameraManualControls.shutterSeconds(forAngle: angle, fps: fps)
+                    var text = "\(CameraManualControls.shutterText(forSeconds: seconds)) \(CameraManualControls.angleText(angle))"
+                    if CameraManualControls.isFlickerSafe60Hz(seconds: seconds) { text += " ⚡" }
+                    return text
+                }
             )
             controlSheet.configure(title: "曝光 EXPOSURE", showsModeToggle: caps.supportsCustomExposure, isAuto: false, sliders: [iso, shutter])
         }
@@ -733,16 +747,22 @@ final class CameraViewController: UIViewController {
             session.setExposureBias(value)
         case "ISO":
             manualISO = value
-            session.setManualExposure(iso: manualISO, shutterSeconds: manualShutterSeconds)
+            applyManualExposure()
         case "SHUTTER":
-            manualShutterSeconds = Double(value)
-            session.setManualExposure(iso: manualISO, shutterSeconds: manualShutterSeconds)
+            // value 是吸附後的快門角度，依當前 fps 換算成秒套用。
+            manualShutterAngle = Double(value)
+            applyManualExposure()
         case "WB":
             manualKelvin = value
             session.setWhiteBalance(kelvin: value)
         default:
             break
         }
+    }
+
+    private func applyManualExposure() {
+        let seconds = CameraManualControls.shutterSeconds(forAngle: manualShutterAngle, fps: manualFPS)
+        session.setManualExposure(iso: manualISO, shutterSeconds: seconds)
     }
 
     private func handleSheetModeChanged(isAuto: Bool) {
@@ -753,7 +773,7 @@ final class CameraViewController: UIViewController {
             if isAuto {
                 session.setAutoExposure()
             } else {
-                session.setManualExposure(iso: manualISO, shutterSeconds: manualShutterSeconds)
+                applyManualExposure()
             }
             configureExposureSheet(caps: caps)
         case .whiteBalance:

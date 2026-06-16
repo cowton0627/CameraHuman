@@ -61,4 +61,58 @@ enum CameraManualControls {
         let denominator = max(1, Int((1 / seconds).rounded()))
         return "1/\(denominator)"
     }
+
+    // MARK: - ISO stops（1/3 級標準段位）
+
+    /// 1/3 stop 標準 ISO 序列。低到 10、高到 51200 涵蓋所有 iPhone 鏡頭範圍。
+    static let isoStopBase: [Float] = [
+        10, 12, 16, 20, 25, 32, 40, 50, 64, 80,
+        100, 125, 160, 200, 250, 320, 400, 500, 640, 800,
+        1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000,
+        10000, 12800, 16000, 20000, 25600, 32000, 40000, 51200
+    ]
+
+    /// 依鏡頭實際 min/max 產生 ISO 段位。端點用硬體實際值（iPhone minISO 常是 34 之類非標準值，
+    /// 保留它才能用到最低光），中間鋪標準 1/3 stop。
+    static func isoStops(min lower: Float, max upper: Float) -> [Float] {
+        guard upper > lower, lower > 0 else { return [lower].filter { $0 > 0 } }
+        var stops = isoStopBase.filter { $0 > lower && $0 < upper }
+        stops.insert(lower, at: 0)
+        stops.append(upper)
+        return stops
+    }
+
+    // MARK: - Shutter angle（電影機快門角度制）
+
+    /// 常用快門角度。180° 是電影感標準甜蜜點。
+    static let shutterAngles: [Double] = [45, 90, 172.8, 180, 270, 360]
+    static let recommendedShutterAngle: Double = 180
+
+    /// 快門角度 → 快門速度（秒）。180° @ 24fps = 1/48。
+    static func shutterSeconds(forAngle angle: Double, fps: Double) -> Double {
+        guard fps > 0, angle > 0 else { return 0 }
+        return angle / (360 * fps)
+    }
+
+    /// 快門速度（秒）→ 最接近的快門角度（建面板時把當前快門擺到對的段位）。
+    static func nearestShutterAngle(forSeconds seconds: Double, fps: Double) -> Double {
+        guard seconds > 0, fps > 0 else { return recommendedShutterAngle }
+        let angle = seconds * 360 * fps
+        return shutterAngles.min(by: { abs($0 - angle) < abs($1 - angle) }) ?? recommendedShutterAngle
+    }
+
+    /// 角度顯示文字：整數不帶小數，172.8 保留一位。
+    static func angleText(_ angle: Double) -> String {
+        if abs(angle - angle.rounded()) < 0.05 {
+            return "\(Int(angle.rounded()))°"
+        }
+        return String(format: "%.1f°", angle)
+    }
+
+    /// 60Hz 電網下是否為防閃爍安全快門（≈1/60 或 1/120）。台灣是 60Hz。
+    static func isFlickerSafe60Hz(seconds: Double) -> Bool {
+        guard seconds > 0 else { return false }
+        let denominator = 1 / seconds
+        return abs(denominator - 60) < 1.5 || abs(denominator - 120) < 1.5
+    }
 }

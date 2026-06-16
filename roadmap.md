@@ -46,7 +46,9 @@
 
 > 這些已實作 + build + 單元測試過，但**模擬器沒相機 / 沒麥克風完全驗不了**，要拿 iPhone 跑才算完成。
 
-- **手動控制（FPS / 曝光補償 EV / 手動曝光 ISO+快門 / 白平衡色溫）**：點 HUD chip 調整。FPS chip 點擊循環 24→30→60；ISO/SHUTTER 開「曝光面板」（AUTO 顯示 EV 滑桿 / MANUAL 顯示 ISO+快門滑桿）；WB 開「白平衡面板」（AUTO / 色溫滑桿）。service API 在 `CameraSession`（`setFrameRate` / `setExposureBias` / `setManualExposure` / `setWhiteBalance` 等），純換算邏輯在 `CameraManualControls`，UI 在 `ManualControlSheetView`。真機要驗：各參數是否真的生效、滑桿範圍合理、切鏡頭後要不要重置、快門滑桿線性度是否好用。
+- **手動控制（FPS / 曝光補償 EV / 手動曝光 ISO+快門 / 白平衡色溫）**：點 HUD chip 調整。FPS chip 點擊循環 24→30；ISO/SHUTTER 開「曝光面板」（AUTO 顯示 EV 滑桿 / MANUAL 顯示 ISO 段位 + 快門角度段位滑桿）；WB 開「白平衡面板」（AUTO / 色溫滑桿）。ISO 走 1/3 stop 段位（端點用鏡頭實際 min/max），快門走角度制（45°~360°，依 fps 換算速度，60Hz 防閃爍標 ⚡）。service API 在 `CameraSession`，純換算在 `CameraManualControls`，UI 在 `ManualControlSheetView`。
+  - 已修：面板被 dock 切掉、FPS HUD 顯示 format 上限而非實際值。
+  - 待驗：切鏡頭後手動值要不要重置；HD format 上限 30fps（60 要等 4K/高幀率 format）；曝光 ISO+快門互動實際成像。
 
 ## Mid Term
 
