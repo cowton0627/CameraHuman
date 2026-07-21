@@ -7,6 +7,10 @@ import UIKit
 import AVKit
 import Photos
 
+extension Notification.Name {
+    static let showCameraTabRequested = Notification.Name("showCameraTabRequested")
+}
+
 final class MediaViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private let planner = ShotPlannerStore.shared
 
@@ -14,6 +18,7 @@ final class MediaViewController: UIViewController, UITableViewDataSource, UITabl
     private let subtitleLabel = UILabel()
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let emptyLabel = UILabel()
+    private let openCameraButton = UIButton(type: .system)
     private let toastView = ToastView()
 
     private var recordings: [MediaRecording] = []
@@ -46,11 +51,13 @@ final class MediaViewController: UIViewController, UITableViewDataSource, UITabl
             subtitleLabel.text = linkedRecordingText()
             tableView.reloadData()
             emptyLabel.isHidden = !recordings.isEmpty
+            openCameraButton.isHidden = !recordings.isEmpty
         } catch {
             recordings = []
             subtitleLabel.text = linkedRecordingText()
             tableView.reloadData()
             emptyLabel.isHidden = false
+            openCameraButton.isHidden = false
             emptyLabel.text = "讀取素材失敗\n\(error.localizedDescription)"
         }
     }
@@ -86,10 +93,20 @@ final class MediaViewController: UIViewController, UITableViewDataSource, UITabl
         emptyLabel.numberOfLines = 0
         emptyLabel.text = "目前還沒有錄影素材。"
 
+        openCameraButton.translatesAutoresizingMaskIntoConstraints = false
+        openCameraButton.setTitle("前往 Camera 錄製第一段", for: .normal)
+        openCameraButton.setTitleColor(.white, for: .normal)
+        openCameraButton.titleLabel?.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
+        openCameraButton.backgroundColor = .systemBlue
+        openCameraButton.layer.cornerRadius = 14
+        openCameraButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        openCameraButton.addTarget(self, action: #selector(openCameraTapped), for: .touchUpInside)
+
         view.addSubview(headerLabel)
         view.addSubview(subtitleLabel)
         view.addSubview(tableView)
         view.addSubview(emptyLabel)
+        view.addSubview(openCameraButton)
         view.addSubview(toastView)
 
         NSLayoutConstraint.activate([
@@ -103,14 +120,20 @@ final class MediaViewController: UIViewController, UITableViewDataSource, UITabl
             tableView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 14),
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -24),
             emptyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 28),
             emptyLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -28),
+            openCameraButton.topAnchor.constraint(equalTo: emptyLabel.bottomAnchor, constant: 14),
+            openCameraButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             toastView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             toastView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             toastView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 28),
             toastView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -28)
         ])
+    }
+
+    @objc private func openCameraTapped() {
+        NotificationCenter.default.post(name: .showCameraTabRequested, object: nil)
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -274,6 +297,7 @@ final class MediaViewController: UIViewController, UITableViewDataSource, UITabl
             recordings.remove(at: row)
             tableView.deleteRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
             emptyLabel.isHidden = !recordings.isEmpty
+            openCameraButton.isHidden = !recordings.isEmpty
             return true
         } catch {
             return false

@@ -27,7 +27,7 @@ final class RootTabBarController: UITabBarController {
     private let dockItems = [
         DockItem(title: "Camera", imageName: "camera", selectedImageName: "camera.fill"),
         DockItem(title: "Media", imageName: "film", selectedImageName: "film.fill"),
-        DockItem(title: "Chat", imageName: "bubble.left.and.bubble.right", selectedImageName: "bubble.left.and.bubble.right.fill"),
+        DockItem(title: "Assistant", imageName: "bubble.left.and.bubble.right", selectedImageName: "bubble.left.and.bubble.right.fill"),
         DockItem(title: "Settings", imageName: "gearshape", selectedImageName: "gearshape.fill")
     ]
 
@@ -50,6 +50,17 @@ final class RootTabBarController: UITabBarController {
 
         configureDock()
         updateDockSelection()
+        NotificationCenter.default.addObserver(self, selector: #selector(showCameraTab), name: .showCameraTabRequested, object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func showCameraTab() {
+        selectedIndex = 0
+        updateDockSelection()
+        updateSelectedControllerInsets()
     }
 
     override func viewDidLayoutSubviews() {
@@ -80,6 +91,7 @@ final class RootTabBarController: UITabBarController {
         for index in dockItems.indices {
             let button = UIButton(type: .system)
             button.tag = index
+            button.accessibilityLabel = dockItems[index].title
             button.addTarget(self, action: #selector(dockButtonTapped(_:)), for: .touchUpInside)
             dockButtons.append(button)
             dockStackView.addArrangedSubview(button)

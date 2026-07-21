@@ -68,6 +68,10 @@ final class CameraSession {
         self.currentPosition = settings.startupCamera.capturePosition
     }
 
+    func setAudioSampleBufferDelegate(_ delegate: AVCaptureAudioDataOutputSampleBufferDelegate?, queue: DispatchQueue?) {
+        audioDataOutput.setSampleBufferDelegate(delegate, queue: queue)
+    }
+
     deinit {
         stop()
     }
@@ -211,7 +215,9 @@ final class CameraSession {
                 }
 
                 // Audio input：只在權限或 device 變動時才動
-                let desiredAudioDevice = self.audioAuthorized ? AVCaptureDevice.default(for: .audio) : nil
+                let desiredAudioDevice = self.audioAuthorized && self.settings.recordAudio
+                    ? AVCaptureDevice.default(for: .audio)
+                    : nil
                 let needsAudioSwap = self.currentAudioInput?.device.uniqueID != desiredAudioDevice?.uniqueID
                 if needsAudioSwap {
                     if let currentAudioInput = self.currentAudioInput {
@@ -237,7 +243,7 @@ final class CameraSession {
                     self.captureSession.addOutput(self.audioDataOutput)
                 }
 
-                self.audioDataOutput.connection(with: .audio)?.isEnabled = self.audioAuthorized
+                self.audioDataOutput.connection(with: .audio)?.isEnabled = self.audioAuthorized && self.settings.recordAudio
 
                 if let videoConnection = self.movieOutput.connection(with: .video),
                    videoConnection.isVideoOrientationSupported,

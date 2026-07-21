@@ -28,7 +28,7 @@ final class CameraViewController: UIViewController {
     private let lensStackView = UIStackView()
     private let leftControlsStackView = UIStackView()
     private let bottomStatusLabel = UILabel()
-    private let recordButton = UIButton(type: .system)
+    private let recordButton = UIButton(type: .custom)
     private let switchCameraButton = UIButton(type: .system)
     private let inspectButton = UIButton(type: .system)
     private let deleteLastRecordingButton = UIButton(type: .system)
@@ -43,12 +43,13 @@ final class CameraViewController: UIViewController {
     // MARK: - Manual control state
 
     /// HUD chip 點下去要打開哪種控制。`nil` = 唯讀（如 LENS / IRIS）。
-    private enum HUDControl { case fps, exposure, whiteBalance }
+    private enum HUDControl { case format, frame, fps, exposure, whiteBalance }
 
     private let controlSheet = ManualControlSheetView()
     private var controlSheetBottomConstraint: NSLayoutConstraint?
     /// 重建 chip 時把可點 chip 對應到要開的控制。
-    private var chipControls: [UIView: HUDControl] = [:]
+    private var technicalChipControls: [UIView: HUDControl] = [:]
+    private var primaryChipControls: [UIView: HUDControl] = [:]
     /// 曝光面板狀態：手動模式下兩條滑桿要一起送進 setManualExposure，所以兩個值都要記住。
     private var exposureIsAuto = true
     private var manualISO: Float = 100
@@ -78,6 +79,7 @@ final class CameraViewController: UIViewController {
         configureUI()
         setupControlSheet()
         wireServices()
+        session.setAudioSampleBufferDelegate(audioMonitor, queue: audioMonitor.sampleQueue)
 
         // 把 preview layer 建好就掛上去（綁到 session）。session 之後增刪 input 它會自動跟著刷新，
         // 不必每次 onConfigured 都重建一次。
@@ -100,6 +102,17 @@ final class CameraViewController: UIViewController {
         previewView.setAspectRatio(settings.aspectRatio)
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        UIApplication.shared.isIdleTimerDisabled = settings.keepScreenAwake
+        applyDisplayPreferences()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        UIApplication.shared.isIdleTimerDisabled = false
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
         audioMonitor.stop()
@@ -113,7 +126,6 @@ final class CameraViewController: UIViewController {
             guard let self else { return }
             self.updateLensButtons()
             self.updateHUD(for: device, lensTitle: lensTitle)
-            self.audioMonitor.connection = self.session.audioMeterConnection
             self.audioMonitor.start()
         }
         session.onConfigureFailed = { [weak self] message in
@@ -126,6 +138,7 @@ final class CameraViewController: UIViewController {
 
         recorder.onStateChange = { [weak self] _ in
             self?.updateRecordButtonAppearance()
+            self?.refreshTechnicalHUD()
         }
         recorder.onTimerTick = { [weak self] elapsed in
             let minutes = elapsed / 60
@@ -208,6 +221,7 @@ final class CameraViewController: UIViewController {
     @objc private func cameraSettingsDidChange() {
         previewView.setGuidesVisible(settings.showGrid)
         previewView.setAspectRatio(settings.aspectRatio)
+        applyDisplayPreferences()
 
         guard recorder.state == .idle else {
             updatePrimaryHUD()
@@ -217,6 +231,12 @@ final class CameraViewController: UIViewController {
 
         session.resetPositionFromSettings()
         session.configure(interfaceOrientation: view.window?.windowScene?.interfaceOrientation)
+    }
+
+    private func applyDisplayPreferences() {
+        technicalStatusStackView.isHidden = !settings.showTechnicalHUD
+        audioSummaryLabel.isHidden = isUsingLandscapeLayout || !settings.showAudioMeter || !settings.recordAudio
+        if !settings.recordAudio { audioSummaryLabel.text = "MIC OFF" }
     }
 
     // MARK: - Audio meter forwarding
@@ -324,6 +344,8 @@ final class CameraViewController: UIViewController {
         recordButton.layer.borderWidth = 5
         recordButton.layer.borderColor = UIColor.white.withAlphaComponent(0.92).cgColor
         recordButton.backgroundColor = .systemRed
+        recordButton.layer.masksToBounds = true
+        recordButton.layer.cornerCurve = .continuous
         recordButton.addTarget(self, action: #selector(recordButtonTapped(_:)), for: .touchUpInside)
 
         leftControlsStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -461,8 +483,8 @@ final class CameraViewController: UIViewController {
         lensStackView.axis = shouldUseLandscapeLayout ? .vertical : .horizontal
         lensStackView.isHidden = shouldUseLandscapeLayout
         audioMeterCardView.isHidden = true
-        audioSummaryLabel.isHidden = shouldUseLandscapeLayout
-        technicalStatusStackView.isHidden = false
+        audioSummaryLabel.isHidden = shouldUseLandscapeLayout || !settings.showAudioMeter || !settings.recordAudio
+        technicalStatusStackView.isHidden = !settings.showTechnicalHUD
         secondaryStatusLabel.isHidden = shouldUseLandscapeLayout
         bottomStatusLabel.textAlignment = shouldUseLandscapeLayout ? .center : .left
         view.setNeedsLayout()
@@ -498,7 +520,7 @@ final class CameraViewController: UIViewController {
             technicalStatusStackView.removeArrangedSubview(arrangedView)
             arrangedView.removeFromSuperview()
         }
-        chipControls.removeAll()
+        technicalChipControls.removeAll()
 
         for chip in chips {
             let label = UILabel()
@@ -517,7 +539,11 @@ final class CameraViewController: UIViewController {
                 label.clipsToBounds = true
                 label.isUserInteractionEnabled = true
                 label.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(technicalChipTapped(_:))))
-                chipControls[label] = control
+                technicalChipControls[label] = control
+                if recorder.state != .idle {
+                    let canAdjustISO = control == .exposure && !exposureIsAuto
+                    label.alpha = canAdjustISO ? 1 : 0.55
+                }
             } else {
                 label.backgroundColor = .clear
             }
@@ -527,6 +553,7 @@ final class CameraViewController: UIViewController {
     }
 
     private func replacePrimaryStatusChips(quality: String, aspect: String, timerText: String, isRecording: Bool) {
+        primaryChipControls.removeAll()
         for arrangedView in primaryStatusStackView.arrangedSubviews {
             primaryStatusStackView.removeArrangedSubview(arrangedView)
             arrangedView.removeFromSuperview()
@@ -534,6 +561,8 @@ final class CameraViewController: UIViewController {
 
         let qualityLabel = makePrimaryStatusLabel(title: "FORMAT", value: quality, accentColor: UIColor.systemBlue, isEmphasized: false)
         let aspectLabel = makePrimaryStatusLabel(title: "FRAME", value: aspect, accentColor: UIColor.systemBlue, isEmphasized: false)
+        makeChipInteractive(qualityLabel, control: .format, enabled: recorder.state == .idle)
+        makeChipInteractive(aspectLabel, control: .frame, enabled: recorder.state == .idle)
         let normalizedTimer = timerText.replacingOccurrences(of: "REC ", with: "")
         let timerLabel = makePrimaryStatusLabel(
             title: isRecording ? "REC" : "TIME",
@@ -545,6 +574,13 @@ final class CameraViewController: UIViewController {
         primaryStatusStackView.addArrangedSubview(qualityLabel)
         primaryStatusStackView.addArrangedSubview(aspectLabel)
         primaryStatusStackView.addArrangedSubview(timerLabel)
+    }
+
+    private func makeChipInteractive(_ view: UIView, control: HUDControl, enabled: Bool) {
+        view.isUserInteractionEnabled = true
+        view.alpha = enabled ? 1 : 0.55
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(technicalChipTapped(_:))))
+        primaryChipControls[view] = control
     }
 
     private func makePrimaryStatusLabel(title: String, value: String, accentColor: UIColor, isEmphasized: Bool) -> UILabel {
@@ -638,8 +674,11 @@ final class CameraViewController: UIViewController {
     }
 
     @objc private func technicalChipTapped(_ gesture: UITapGestureRecognizer) {
-        guard let view = gesture.view, let control = chipControls[view] else { return }
+        guard let view = gesture.view,
+              let control = technicalChipControls[view] ?? primaryChipControls[view] else { return }
         switch control {
+        case .format: cycleVideoPreset()
+        case .frame: cycleAspectRatio()
         case .fps: cycleFrameRate()
         case .exposure: presentExposureSheet()
         case .whiteBalance: presentWhiteBalanceSheet()
@@ -647,6 +686,10 @@ final class CameraViewController: UIViewController {
     }
 
     private func cycleFrameRate() {
+        guard recorder.state == .idle else {
+            toastView.show("錄影中無法更改 FPS")
+            return
+        }
         guard let caps = session.manualCapabilities() else {
             toastView.show("此鏡頭無法調整")
             return
@@ -666,6 +709,28 @@ final class CameraViewController: UIViewController {
         }
     }
 
+    private func cycleVideoPreset() {
+        guard recorder.state == .idle else {
+            toastView.show("錄影中無法更改畫質")
+            return
+        }
+        let presets = CameraSettingsStore.VideoPreset.allCases
+        let nextIndex = (settings.videoPreset.rawValue + 1) % presets.count
+        settings.videoPreset = presets[nextIndex]
+        toastView.show("FORMAT \(settings.videoPreset.displayTitle)")
+    }
+
+    private func cycleAspectRatio() {
+        guard recorder.state == .idle else {
+            toastView.show("錄影中無法更改比例")
+            return
+        }
+        let ratios = CameraSettingsStore.AspectRatio.allCases
+        let nextIndex = (settings.aspectRatio.rawValue + 1) % ratios.count
+        settings.aspectRatio = ratios[nextIndex]
+        toastView.show("FRAME \(settings.aspectRatio.displayTitle)")
+    }
+
     private func presentExposureSheet() {
         guard let caps = session.manualCapabilities() else {
             toastView.show("此鏡頭無法手動控制")
@@ -675,11 +740,19 @@ final class CameraViewController: UIViewController {
         manualFPS = caps.currentFrameRate > 0 ? caps.currentFrameRate : 30
         manualISO = CameraManualControls.clamp(caps.currentISO, min: caps.minISO, max: caps.maxISO)
         manualShutterAngle = CameraManualControls.nearestShutterAngle(forSeconds: caps.currentShutterSeconds, fps: manualFPS)
+        if recorder.state != .idle, exposureIsAuto {
+            toastView.show("錄影中僅能調整已鎖定的 ISO")
+            return
+        }
         configureExposureSheet(caps: caps)
         showControlSheet()
     }
 
     private func presentWhiteBalanceSheet() {
+        guard recorder.state == .idle else {
+            toastView.show("錄影中無法更改白平衡")
+            return
+        }
         guard let caps = session.manualCapabilities() else {
             toastView.show("此鏡頭無法手動控制")
             return
@@ -696,9 +769,11 @@ final class CameraViewController: UIViewController {
 
     private func configureExposureSheet(caps: CameraSession.ManualCapabilities) {
         if exposureIsAuto {
+            let evStops = CameraManualControls.exposureBiasStops(min: caps.minBias, max: caps.maxBias)
             let ev = ManualControlSheetView.SliderModel(
                 key: "EV", title: "EV",
                 minValue: caps.minBias, maxValue: caps.maxBias, value: caps.currentBias,
+                steps: evStops,
                 display: { String(format: "%+.1f", $0) }
             )
             controlSheet.configure(title: "曝光 EXPOSURE", showsModeToggle: true, isAuto: true, sliders: [ev])
@@ -716,6 +791,7 @@ final class CameraViewController: UIViewController {
                 key: "SHUTTER", title: "快門",
                 minValue: 0, maxValue: Float(max(0, angleSteps.count - 1)), value: Float(manualShutterAngle),
                 steps: angleSteps,
+                isEnabled: recorder.state == .idle,
                 display: { angleValue in
                     let angle = Double(angleValue)
                     let seconds = CameraManualControls.shutterSeconds(forAngle: angle, fps: fps)
@@ -724,7 +800,8 @@ final class CameraViewController: UIViewController {
                     return text
                 }
             )
-            controlSheet.configure(title: "曝光 EXPOSURE", showsModeToggle: caps.supportsCustomExposure, isAuto: false, sliders: [iso, shutter])
+            let sliders = recorder.state == .idle ? [iso, shutter] : [iso]
+            controlSheet.configure(title: recorder.state == .idle ? "曝光 EXPOSURE" : "錄影中 · ISO", showsModeToggle: recorder.state == .idle && caps.supportsCustomExposure, isAuto: false, sliders: sliders)
         }
     }
 
@@ -735,6 +812,7 @@ final class CameraViewController: UIViewController {
             let kelvin = ManualControlSheetView.SliderModel(
                 key: "WB", title: "色溫",
                 minValue: caps.minKelvin, maxValue: caps.maxKelvin, value: manualKelvin,
+                steps: CameraManualControls.kelvinStops(min: caps.minKelvin, max: caps.maxKelvin),
                 display: { String(format: "%.0fK", $0) }
             )
             controlSheet.configure(title: "白平衡 WHITE BALANCE", showsModeToggle: true, isAuto: false, sliders: [kelvin])
@@ -742,6 +820,10 @@ final class CameraViewController: UIViewController {
     }
 
     private func handleSliderChanged(key: String, value: Float) {
+        if recorder.state != .idle, key != "ISO" {
+            toastView.show("錄影中僅能調整 ISO")
+            return
+        }
         switch key {
         case "EV":
             session.setExposureBias(value)
@@ -766,6 +848,10 @@ final class CameraViewController: UIViewController {
     }
 
     private func handleSheetModeChanged(isAuto: Bool) {
+        guard recorder.state == .idle else {
+            toastView.show("錄影中無法切換模式")
+            return
+        }
         guard let control = activeSheetControl, let caps = session.manualCapabilities() else { return }
         switch control {
         case .exposure:
@@ -784,7 +870,7 @@ final class CameraViewController: UIViewController {
                 session.setWhiteBalance(kelvin: manualKelvin)
             }
             configureWhiteBalanceSheet(caps: caps)
-        case .fps:
+        case .format, .frame, .fps:
             break
         }
     }
@@ -866,7 +952,7 @@ final class CameraViewController: UIViewController {
         switch recorder.state {
         case .idle:
             recordButton.backgroundColor = .systemRed
-            recordButton.layer.cornerRadius = 30
+            recordButton.layer.cornerRadius = 28
             recordButton.isEnabled = session.cameraAuthorized
         case .starting, .stopping:
             recordButton.backgroundColor = UIColor.systemOrange

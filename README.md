@@ -12,8 +12,8 @@
   拍攝頁。整合相機預覽、錄影、鏡頭切換、音訊電平監看、格式資訊與技術 HUD。
 - `Media`
   已錄製素材列表，支援播放、滑動刪除、素材註記，以及把某支素材 link 到 planner。
-- `Chat`
-  拍攝助理頁。本地 keyword 對話引擎 + shot checklist + 備忘 + action items。
+- `Assistant`
+  拍攝助理頁。清楚標示為本地 rule-based engine，整合 shot checklist、備忘與 action items；`ChatEngine` 可替換成真正 AI provider。
 - `Settings`
   拍攝偏好：錄影畫質、比例、啟動鏡頭、格線。
 
@@ -24,7 +24,7 @@
 - 服務層拆分：
   - `CameraSession` 管 `AVCaptureSession`、鏡頭枚舉、前後鏡頭切換、權限請求
   - `CameraRecorder` 管錄影狀態機（idle / starting / recording / stopping）+ `AVCaptureFileOutputRecordingDelegate` + 計時器
-  - `AudioLevelMonitor` 用 timer 輪詢 `AVCaptureConnection` 的 audio channels
+  - `AudioLevelMonitor` 從 PCM sample buffer 計算 RMS / dB
 - 後鏡頭依硬體實際支援列出 0.5x / 1x / 3x，不做假鏡頭
 - 前鏡頭只暴露單一 front mode，不硬做多焦段假象
 - 上方拍攝 HUD
@@ -52,11 +52,11 @@
 - 分享（`UIActivityViewController`）與匯出到照片 App（`PHPhotoLibrary`）
 - `4:3` 模式錄影在儲存時做輸出裁切（`MediaLibrary` 內）
 
-### Chat
+### Assistant
 
 - 三顆 quick action button：目前設定 / 最近素材 / 下一步建議
 - Planner 卡片：shot checklist（44pt 觸控區）/ 備忘 / 儲存 / linked clip / action items
-- 對話引擎走 `ChatEngine` 協定，目前實作為本地 keyword 比對；未來換 AI 只要換實作
+- 對話引擎走 `ChatEngine` 協定，目前 UI 明確標示為本地 rule-based engine；未來換 AI 只要替換實作
 - 鍵盤避讓：點空白 / 拖列表 / Return key 都會收下鍵盤
 
 ### Settings
@@ -65,6 +65,10 @@
 - `16:9` / `4:3`
 - 預設前鏡頭 / 後鏡頭
 - 顯示格線
+- 是否錄音 / 是否顯示 Audio Meter
+- Technical HUD / Camera 頁保持螢幕常亮
+- 顯示目前音訊 route 與 channel 數
+- 3 分鐘展示流程、工程亮點與 build 資訊
 
 ## Tech Stack
 
@@ -160,10 +164,18 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
 
 最低支援 iOS 13.0。`Info.plist` 內含 `NSCameraUsageDescription` / `NSMicrophoneUsageDescription` / `UILaunchStoryboardName`，啟動畫面已修，App 不再被 letterbox 在螢幕中央。
 
+## Interview Demo (3 minutes)
+
+1. `Camera`：指出鏡頭清單與手動控制都來自實機 capability；切換 FORMAT / FRAME，確認 MIC meter 後錄一段。
+2. `Media`：播放剛錄的素材，加 Note，並 Link 到 Planner。
+3. `Assistant`：點「目前設定」「最近素材」「下一步建議」，展示跨 store context 與 action item 寫回；同時說明目前是本地 rule-based engine，不假裝已接 LLM。
+4. `Settings`：展示可持久化偏好、真實 audio route/channel，以及 app 內的 Engineering Highlights。
+
+展示前先確認：Camera / Microphone 權限、至少 200 MB 可用空間、直向與橫向各開一次、錄製檔確實有畫面與聲音。
+
 ## Current Limitations
 
 - `4:3` 目前是錄後裁切，仍需真機驗證不同方向與不同鏡頭的結果一致。
-- 音訊監看是單一 capture connection 的 level meter，不是完整多軌 mixer。
-- `Chat` 還是本地 keyword 引擎；架構已用 `ChatEngine` 協定預留 swap 點，但未接外部 AI。
+- 音訊監看會讀取真實 PCM level，但仍不是多軌 mixer；內建輸入可能只提供單一 capture channel。
+- `Assistant` 還是本地 rule-based engine；架構已用 `ChatEngine` 協定預留 swap 點，但未接外部 AI。
 - `Media` 是單層素材列表，沒有專案、資料夾或標籤系統。
-

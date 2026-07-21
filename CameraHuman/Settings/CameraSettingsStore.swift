@@ -18,6 +18,10 @@ protocol CameraSettings: AnyObject {
     var aspectRatio: CameraSettingsStore.AspectRatio { get }
     var startupCamera: CameraSettingsStore.StartupCamera { get }
     var showGrid: Bool { get }
+    var recordAudio: Bool { get }
+    var showAudioMeter: Bool { get }
+    var showTechnicalHUD: Bool { get }
+    var keepScreenAwake: Bool { get }
 }
 
 final class CameraSettingsStore: CameraSettings {
@@ -87,6 +91,10 @@ final class CameraSettingsStore: CameraSettings {
         static let aspectRatio = "camera_settings_aspect_ratio"
         static let startupCamera = "camera_settings_startup_camera"
         static let showGrid = "camera_settings_show_grid"
+        static let recordAudio = "camera_settings_record_audio"
+        static let showAudioMeter = "camera_settings_show_audio_meter"
+        static let showTechnicalHUD = "camera_settings_show_technical_hud"
+        static let keepScreenAwake = "camera_settings_keep_screen_awake"
     }
 
     private let defaults: UserDefaults
@@ -107,6 +115,11 @@ final class CameraSettingsStore: CameraSettings {
         didSet { persist() }
     }
 
+    var recordAudio: Bool { didSet { persist() } }
+    var showAudioMeter: Bool { didSet { persist() } }
+    var showTechnicalHUD: Bool { didSet { persist() } }
+    var keepScreenAwake: Bool { didSet { persist() } }
+
     /// `defaults` 預設用 `.standard`，測試時可注入獨立 suite 避免污染。Production 走 `.shared`。
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -119,6 +132,10 @@ final class CameraSettingsStore: CameraSettings {
         } else {
             showGrid = defaults.bool(forKey: Keys.showGrid)
         }
+        recordAudio = defaults.object(forKey: Keys.recordAudio) == nil ? true : defaults.bool(forKey: Keys.recordAudio)
+        showAudioMeter = defaults.object(forKey: Keys.showAudioMeter) == nil ? true : defaults.bool(forKey: Keys.showAudioMeter)
+        showTechnicalHUD = defaults.object(forKey: Keys.showTechnicalHUD) == nil ? true : defaults.bool(forKey: Keys.showTechnicalHUD)
+        keepScreenAwake = defaults.object(forKey: Keys.keepScreenAwake) == nil ? true : defaults.bool(forKey: Keys.keepScreenAwake)
     }
 
     private func persist() {
@@ -126,6 +143,10 @@ final class CameraSettingsStore: CameraSettings {
         defaults.set(aspectRatio.rawValue, forKey: Keys.aspectRatio)
         defaults.set(startupCamera.rawValue, forKey: Keys.startupCamera)
         defaults.set(showGrid, forKey: Keys.showGrid)
+        defaults.set(recordAudio, forKey: Keys.recordAudio)
+        defaults.set(showAudioMeter, forKey: Keys.showAudioMeter)
+        defaults.set(showTechnicalHUD, forKey: Keys.showTechnicalHUD)
+        defaults.set(keepScreenAwake, forKey: Keys.keepScreenAwake)
         NotificationCenter.default.post(name: .cameraSettingsDidChange, object: nil)
     }
 }

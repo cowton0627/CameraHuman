@@ -47,7 +47,7 @@
 > 這些已實作 + build + 單元測試過，但**模擬器沒相機 / 沒麥克風完全驗不了**，要拿 iPhone 跑才算完成。
 
 - **手動控制（FPS / 曝光補償 EV / 手動曝光 ISO+快門 / 白平衡色溫）**：點 HUD chip 調整。FPS chip 點擊循環 24→30；ISO/SHUTTER 開「曝光面板」（AUTO 顯示 EV 滑桿 / MANUAL 顯示 ISO 段位 + 快門角度段位滑桿）；WB 開「白平衡面板」（AUTO / 色溫滑桿）。ISO 走 1/3 stop 段位（端點用鏡頭實際 min/max），快門走角度制（45°~360°，依 fps 換算速度，60Hz 防閃爍標 ⚡）。service API 在 `CameraSession`，純換算在 `CameraManualControls`，UI 在 `ManualControlSheetView`。
-  - 已修：面板被 dock 切掉、FPS HUD 顯示 format 上限而非實際值。
+  - 已修：面板被 dock 切掉、FPS HUD 顯示 format 上限而非實際值；錄影中鎖定 FPS / 快門 / 模式 / WB / FORMAT / FRAME，只保留預先進入手動曝光後的 ISO；EV 改 1/3 stop、WB 改 100K；FORMAT / FRAME 可在取景畫面切換。
   - 待驗：拖 ISO / 快門時成像有沒有跟著變；ISO 段位吸附手感（一格格跳到 100/125/160…）；快門角度切換是否直覺、24fps 選 180° 是否顯示 `1/48`；`⚡` 有沒有正確出現在 1/60、1/120；切鏡頭（0.5x↔1x）後手動值要不要重置；HD format 上限 30fps（60 要等 4K/高幀率 format）。
 
 > **本次工作階段（2026-06，已全部 commit）做完**：Media Quick Wins 三項（縮圖+片長 / context menu / 分享匯出，模擬器驗過）＋ 相機手動控制完整實作（FPS / EV / 手動曝光 ISO+快門 / 白平衡，ISO 段位制 + 快門角度制 + 60Hz 防閃爍）。
@@ -63,6 +63,10 @@
 > - 拖滑桿時 `setManualExposure` 高頻呼叫（每次 valueChanged）會不會卡頓
 >
 > **下次接著做的起點＝跑完整真機驗證**（上面 + 待驗清單），有問題先修；都 OK 再從 Short Term 往下挑。
+
+> **2026-07-21 真機回饋修正（已準備 commit）**：MIC meter 改從 PCM sample buffer 計算 RMS / dB，Settings 顯示真實 audio route / channel 並可控制錄音與 meter；修正錄影鈕圓角；Assistant 全頁可捲並修掉 tableHeader constraint crash；Settings 擴充拍攝、監看、音訊與 portfolio guide；Media 空狀態加入回 Camera CTA；Assistant 明確標示為 local rule-based，避免誤導成已接 LLM。
+>
+> **仍需真機複驗**：MIC meter 是否持續跳動且輸出檔有聲音、內建／外接音訊 channel 顯示、錄影中只有 ISO 可調、FORMAT / FRAME 待機切換、Assistant 捲動與鍵盤、Media CTA、錄影鈕各狀態外觀。
 
 ## Mid Term
 

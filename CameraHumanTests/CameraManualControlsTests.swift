@@ -122,6 +122,17 @@ final class CameraManualControlsTests: XCTestCase {
 
     // MARK: - ISO stops
 
+    func test_exposureBiasStops_usesThirdStopSteps() {
+        let stops = CameraManualControls.exposureBiasStops(min: -1, max: 1)
+        XCTAssertEqual(stops.first, -1)
+        XCTAssertEqual(stops.last, 1)
+        XCTAssertTrue(stops.contains(where: { abs($0 - (1.0 / 3.0)) < 0.001 }))
+    }
+
+    func test_kelvinStops_usesHundredKelvinSteps() {
+        XCTAssertEqual(CameraManualControls.kelvinStops(min: 2000, max: 2400), [2000, 2100, 2200, 2300, 2400])
+    }
+
     func test_isoStops_keepsHardwareEndpoints() {
         let stops = CameraManualControls.isoStops(min: 34, max: 3072)
         XCTAssertEqual(stops.first, 34)

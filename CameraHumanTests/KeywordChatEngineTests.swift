@@ -13,6 +13,10 @@ private final class StubCameraSettings: CameraSettings {
     var aspectRatio: CameraSettingsStore.AspectRatio = .ratio16x9
     var startupCamera: CameraSettingsStore.StartupCamera = .back
     var showGrid: Bool = true
+    var recordAudio: Bool = true
+    var showAudioMeter: Bool = true
+    var showTechnicalHUD: Bool = true
+    var keepScreenAwake: Bool = true
 }
 
 private final class StubMediaLibrary: MediaLibraryReading {

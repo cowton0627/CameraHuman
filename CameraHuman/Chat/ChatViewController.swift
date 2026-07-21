@@ -18,6 +18,7 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
 
     private let chatEngine: ChatEngine
     private let plannerCard = PlannerCardView()
+    private let headerContainerView = UIView()
 
     private let headerLabel = UILabel()
     private let subtitleLabel = UILabel()
@@ -65,6 +66,11 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         }
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateTableHeaderSizeIfNeeded()
+    }
+
     @objc private func quickActionTapped(_ sender: UIButton) {
         guard let title = sender.currentTitle else { return }
         inputField.text = title
@@ -96,13 +102,13 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         headerLabel.translatesAutoresizingMaskIntoConstraints = false
         headerLabel.font = .monospacedSystemFont(ofSize: 22, weight: .semibold)
         headerLabel.textColor = .white
-        headerLabel.text = "Chat"
+        headerLabel.text = "Assistant"
 
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         subtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
         subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.72)
         subtitleLabel.numberOfLines = 0
-        subtitleLabel.text = "目前會讀取最新設定與最近素材，幫你整理拍攝狀態。"
+        subtitleLabel.text = "LOCAL · RULE-BASED\n讀取目前設定、最近素材與 Planner 狀態；ChatEngine 可替換成真正的 AI provider。"
 
         quickActionsStackView.translatesAutoresizingMaskIntoConstraints = false
         quickActionsStackView.axis = .horizontal
@@ -153,10 +159,10 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         sendButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
         sendButton.addTarget(self, action: #selector(sendTapped(_:)), for: .touchUpInside)
 
-        view.addSubview(headerLabel)
-        view.addSubview(subtitleLabel)
-        view.addSubview(quickActionsStackView)
-        view.addSubview(plannerCard)
+        headerContainerView.addSubview(headerLabel)
+        headerContainerView.addSubview(subtitleLabel)
+        headerContainerView.addSubview(quickActionsStackView)
+        headerContainerView.addSubview(plannerCard)
         view.addSubview(tableView)
         view.addSubview(inputContainerView)
         inputContainerView.addSubview(inputField)
@@ -170,11 +176,12 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         NSLayoutConstraint.activate([
             inputBottomConstraint,
 
-            headerLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            headerLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            headerLabel.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 20),
+            headerLabel.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -20),
+            headerLabel.topAnchor.constraint(equalTo: headerContainerView.topAnchor, constant: 20),
 
             subtitleLabel.leadingAnchor.constraint(equalTo: headerLabel.leadingAnchor),
-            subtitleLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            subtitleLabel.trailingAnchor.constraint(equalTo: headerLabel.trailingAnchor),
             subtitleLabel.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 8),
 
             quickActionsStackView.leadingAnchor.constraint(equalTo: headerLabel.leadingAnchor),
@@ -185,9 +192,11 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
             plannerCard.leadingAnchor.constraint(equalTo: headerLabel.leadingAnchor),
             plannerCard.trailingAnchor.constraint(equalTo: subtitleLabel.trailingAnchor),
             plannerCard.topAnchor.constraint(equalTo: quickActionsStackView.bottomAnchor, constant: 14),
+            plannerCard.bottomAnchor.constraint(equalTo: headerContainerView.bottomAnchor, constant: -14),
 
-            inputContainerView.leadingAnchor.constraint(equalTo: headerLabel.leadingAnchor),
-            inputContainerView.trailingAnchor.constraint(equalTo: subtitleLabel.trailingAnchor),
+            // Input 固定在主畫面的 safe area，不能跨到尚未掛進 table 的 header hierarchy。
+            inputContainerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            inputContainerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
 
             inputField.leadingAnchor.constraint(equalTo: inputContainerView.leadingAnchor, constant: 14),
             inputField.topAnchor.constraint(equalTo: inputContainerView.topAnchor, constant: 12),
@@ -200,9 +209,26 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
 
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.topAnchor.constraint(equalTo: plannerCard.bottomAnchor, constant: 14),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: inputContainerView.topAnchor, constant: -12)
         ])
+
+        tableView.tableHeaderView = headerContainerView
+    }
+
+    private func updateTableHeaderSizeIfNeeded() {
+        let width = tableView.bounds.width
+        guard width > 0 else { return }
+        headerContainerView.frame.size.width = width
+        let targetSize = CGSize(width: width, height: UIView.layoutFittingCompressedSize.height)
+        let height = headerContainerView.systemLayoutSizeFitting(
+            targetSize,
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+        guard abs(headerContainerView.frame.height - height) > 0.5 else { return }
+        headerContainerView.frame.size.height = height
+        tableView.tableHeaderView = headerContainerView
     }
 
     private func sendCurrentInput() {

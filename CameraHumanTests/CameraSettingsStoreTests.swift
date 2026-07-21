@@ -53,6 +53,14 @@ final class CameraSettingsStoreTests: XCTestCase {
         XCTAssertTrue(store.showGrid)
     }
 
+    func test_defaults_operationalSettingsAreEnabled() {
+        let store = makeStore()
+        XCTAssertTrue(store.recordAudio)
+        XCTAssertTrue(store.showAudioMeter)
+        XCTAssertTrue(store.showTechnicalHUD)
+        XCTAssertTrue(store.keepScreenAwake)
+    }
+
     // 5. 設 videoPreset → didSet persist 到 defaults
     func test_setVideoPreset_persists() {
         let store = makeStore()
@@ -88,12 +96,20 @@ final class CameraSettingsStoreTests: XCTestCase {
         store1.aspectRatio = .ratio4x3
         store1.startupCamera = .front
         store1.showGrid = false
+        store1.recordAudio = false
+        store1.showAudioMeter = false
+        store1.showTechnicalHUD = false
+        store1.keepScreenAwake = false
 
         let store2 = CameraSettingsStore(defaults: defaults)
         XCTAssertEqual(store2.videoPreset, .fullHD)
         XCTAssertEqual(store2.aspectRatio, .ratio4x3)
         XCTAssertEqual(store2.startupCamera, .front)
         XCTAssertFalse(store2.showGrid)
+        XCTAssertFalse(store2.recordAudio)
+        XCTAssertFalse(store2.showAudioMeter)
+        XCTAssertFalse(store2.showTechnicalHUD)
+        XCTAssertFalse(store2.keepScreenAwake)
     }
 
     // 10. 任一 setter 都觸發 .cameraSettingsDidChange 通知

@@ -14,19 +14,21 @@ final class ManualControlSheetView: UIView {
         let minValue: Float
         let maxValue: Float
         let value: Float
+        let isEnabled: Bool
         /// 離散段位值。`nil` = 連續滑桿（如 EV / 色溫）；有值 = 吸附段位（如 ISO / 快門角度）。
         /// 段位模式下滑桿走的是 index（0...count-1），回傳給 callback 的是 `steps[index]` 實際值。
         let steps: [Float]?
         /// 把當前值轉成顯示文字。段位模式收到的是 `steps[index]` 實際值。
         let display: (Float) -> String
 
-        init(key: String, title: String, minValue: Float, maxValue: Float, value: Float, steps: [Float]? = nil, display: @escaping (Float) -> String) {
+        init(key: String, title: String, minValue: Float, maxValue: Float, value: Float, steps: [Float]? = nil, isEnabled: Bool = true, display: @escaping (Float) -> String) {
             self.key = key
             self.title = title
             self.minValue = minValue
             self.maxValue = maxValue
             self.value = value
             self.steps = steps
+            self.isEnabled = isEnabled
             self.display = display
         }
     }
@@ -152,11 +154,15 @@ final class ManualControlSheetView: UIView {
         let slider = UISlider()
         slider.minimumTrackTintColor = .systemBlue
         slider.accessibilityIdentifier = model.key
+        slider.isEnabled = model.isEnabled
+        slider.alpha = model.isEnabled ? 1 : 0.4
         if let steps = model.steps, !steps.isEmpty {
-            // 段位模式：滑桿走 index，初始擺到 >= 當前值的第一個段位。
+            // 段位模式：滑桿走 index，初始擺到離當前值最近的段位。
             slider.minimumValue = 0
             slider.maximumValue = Float(steps.count - 1)
-            let index = steps.firstIndex(where: { $0 >= model.value }) ?? (steps.count - 1)
+            let index = steps.indices.min(by: {
+                abs(steps[$0] - model.value) < abs(steps[$1] - model.value)
+            }) ?? 0
             slider.value = Float(index)
             valueLabel.text = model.display(steps[index])
         } else {

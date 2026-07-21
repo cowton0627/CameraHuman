@@ -9,6 +9,28 @@ import CoreMedia
 /// 手動控制的純換算 / clamp 邏輯，抽出來不依賴實體 `AVCaptureDevice`，方便單元測試。
 /// 真正去 `lockForConfiguration` 設定 device 的部分在 `CameraSession`。
 enum CameraManualControls {
+    /// 曝光補償採攝影常用的 1/3 EV 級距。
+    static func exposureBiasStops(min lower: Float, max upper: Float) -> [Float] {
+        steppedValues(min: lower, max: upper, step: 1.0 / 3.0)
+    }
+
+    /// 白平衡以 100K 為操作級距，避免產生 5001K 這類沒有實務意義的數值。
+    static func kelvinStops(min lower: Float, max upper: Float) -> [Float] {
+        steppedValues(min: lower, max: upper, step: 100)
+    }
+
+    private static func steppedValues(min lower: Float, max upper: Float, step: Float) -> [Float] {
+        guard upper > lower, step > 0 else { return [lower] }
+        var values: [Float] = [lower]
+        var value = ceil(lower / step) * step
+        while value < upper {
+            if value > lower { values.append(value) }
+            value += step
+        }
+        values.append(upper)
+        return values
+    }
+
     /// 拍攝常用的標準幀率。實機支援哪些由 device 的 frame rate range 再篩一次。
     static let standardFrameRates: [Double] = [24, 30, 60]
 
