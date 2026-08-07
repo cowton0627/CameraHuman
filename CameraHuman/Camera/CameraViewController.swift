@@ -7,6 +7,7 @@ import AVFoundation
 import UIKit
 
 final class CameraViewController: UIViewController {
+    private var isUITesting: Bool { ProcessInfo.processInfo.arguments.contains("-ui-testing") }
     private let settings = CameraSettingsStore.shared
     private let session = CameraSession()
     private lazy var recorder = CameraRecorder(session: session)
@@ -78,6 +79,13 @@ final class CameraViewController: UIViewController {
 
         configureUI()
         setupControlSheet()
+
+        if isUITesting {
+            secondaryStatusLabel.text = "UI testing mode"
+            bottomStatusLabel.text = "Camera hardware disabled for UI tests"
+            return
+        }
+
         wireServices()
         session.setAudioSampleBufferDelegate(audioMonitor, queue: audioMonitor.sampleQueue)
 
@@ -340,6 +348,8 @@ final class CameraViewController: UIViewController {
         audioSummaryLabel.text = "MIC -- dB"
 
         recordButton.translatesAutoresizingMaskIntoConstraints = false
+        recordButton.accessibilityIdentifier = "camera.record"
+        recordButton.accessibilityLabel = "Record"
         recordButton.layer.cornerRadius = 30
         recordButton.layer.borderWidth = 5
         recordButton.layer.borderColor = UIColor.white.withAlphaComponent(0.92).cgColor
@@ -354,10 +364,14 @@ final class CameraViewController: UIViewController {
         leftControlsStackView.alignment = .center
 
         switchCameraButton.translatesAutoresizingMaskIntoConstraints = false
+        switchCameraButton.accessibilityIdentifier = "camera.switch"
+        switchCameraButton.accessibilityLabel = "Switch Camera"
         styleHUDButton(switchCameraButton, title: "arrow.2.circlepath")
         switchCameraButton.addTarget(self, action: #selector(switchCameraTapped(_:)), for: .touchUpInside)
 
         inspectButton.translatesAutoresizingMaskIntoConstraints = false
+        inspectButton.accessibilityIdentifier = "camera.diagnostics"
+        inspectButton.accessibilityLabel = "Camera Diagnostics"
         styleHUDButton(inspectButton, title: "info.circle")
         inspectButton.addTarget(self, action: #selector(inspectTapped(_:)), for: .touchUpInside)
 

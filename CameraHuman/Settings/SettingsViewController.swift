@@ -79,6 +79,7 @@ final class SettingsViewController: UIViewController {
         titleLabel.font = .monospacedSystemFont(ofSize: 22, weight: .semibold)
         titleLabel.textColor = .white
         titleLabel.text = "Settings"
+        titleLabel.accessibilityIdentifier = "settings.title"
 
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.font = .systemFont(ofSize: 13, weight: .regular)
@@ -95,6 +96,15 @@ final class SettingsViewController: UIViewController {
         let recordAudioSection = makeSwitchSection(title: "Record Audio", subtitle: "把目前可用的音訊輸入寫入錄影檔。關閉後影片不含聲音。", toggle: recordAudioSwitch)
         let meterSection = makeSwitchSection(title: "Audio Meter", subtitle: "在取景畫面顯示即時 MIC dB；不影響錄音內容。", toggle: audioMeterSwitch)
         let audioInputSection = makeInfoSection(title: "Current Audio Input", label: audioInputLabel)
+
+        qualityControl.accessibilityIdentifier = "settings.quality"
+        aspectControl.accessibilityIdentifier = "settings.aspectRatio"
+        startupCameraControl.accessibilityIdentifier = "settings.startupCamera"
+        gridSwitch.accessibilityIdentifier = "settings.showGrid"
+        recordAudioSwitch.accessibilityIdentifier = "settings.recordAudio"
+        audioMeterSwitch.accessibilityIdentifier = "settings.audioMeter"
+        technicalHUDSwitch.accessibilityIdentifier = "settings.technicalHUD"
+        keepScreenAwakeSwitch.accessibilityIdentifier = "settings.keepScreenAwake"
         demoFlowLabel.text = "1. Camera：確認格式、構圖與 MIC，錄一段素材\n2. Media：播放、註記並 Link 到 Planner\n3. Assistant：查看狀態並產生下一步 action item"
         engineeringLabel.text = "UIKit + AVFoundation\n硬體能力驅動鏡頭與手動控制\nCapture service / recorder state machine / injectable ChatEngine\nUserDefaults + files + JSON，無第三方依賴"
         let info = Bundle.main.infoDictionary

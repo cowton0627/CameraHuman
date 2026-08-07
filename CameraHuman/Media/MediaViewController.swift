@@ -71,6 +71,7 @@ final class MediaViewController: UIViewController, UITableViewDataSource, UITabl
         headerLabel.font = .monospacedSystemFont(ofSize: 24, weight: .semibold)
         headerLabel.textColor = .white
         headerLabel.text = "Media"
+        headerLabel.accessibilityIdentifier = "media.title"
 
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         subtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
@@ -92,8 +93,10 @@ final class MediaViewController: UIViewController, UITableViewDataSource, UITabl
         emptyLabel.textAlignment = .center
         emptyLabel.numberOfLines = 0
         emptyLabel.text = "目前還沒有錄影素材。"
+        emptyLabel.accessibilityIdentifier = "media.empty"
 
         openCameraButton.translatesAutoresizingMaskIntoConstraints = false
+        openCameraButton.accessibilityIdentifier = "media.openCamera"
         openCameraButton.setTitle("前往 Camera 錄製第一段", for: .normal)
         openCameraButton.setTitleColor(.white, for: .normal)
         openCameraButton.titleLabel?.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)

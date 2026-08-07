@@ -103,6 +103,7 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         headerLabel.font = .monospacedSystemFont(ofSize: 22, weight: .semibold)
         headerLabel.textColor = .white
         headerLabel.text = "Assistant"
+        headerLabel.accessibilityIdentifier = "assistant.title"
 
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         subtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
@@ -118,6 +119,7 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         let quickTitles = ["目前設定", "最近素材", "下一步建議"]
         for title in quickTitles {
             let button = UIButton(type: .system)
+            button.accessibilityIdentifier = "assistant.quickAction.\(title)"
             button.setTitle(title, for: .normal)
             button.setTitleColor(.white, for: .normal)
             button.titleLabel?.font = .monospacedSystemFont(ofSize: 11, weight: .semibold)
@@ -143,6 +145,7 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         inputContainerView.layer.cornerRadius = 18
 
         inputField.translatesAutoresizingMaskIntoConstraints = false
+        inputField.accessibilityIdentifier = "assistant.input"
         inputField.textColor = .white
         inputField.attributedPlaceholder = NSAttributedString(
             string: "輸入拍攝問題",
@@ -151,6 +154,7 @@ final class ChatViewController: UIViewController, UITableViewDataSource, UITable
         inputField.delegate = self
 
         sendButton.translatesAutoresizingMaskIntoConstraints = false
+        sendButton.accessibilityIdentifier = "assistant.send"
         sendButton.setTitle("送出", for: .normal)
         sendButton.setTitleColor(.white, for: .normal)
         sendButton.titleLabel?.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)

@@ -92,6 +92,7 @@ final class RootTabBarController: UITabBarController {
             let button = UIButton(type: .system)
             button.tag = index
             button.accessibilityLabel = dockItems[index].title
+            button.accessibilityIdentifier = "dock.\(dockItems[index].title.lowercased())"
             button.addTarget(self, action: #selector(dockButtonTapped(_:)), for: .touchUpInside)
             dockButtons.append(button)
             dockStackView.addArrangedSubview(button)

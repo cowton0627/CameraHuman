@@ -49,9 +49,7 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
 
 ## 跑測試
 
-Tests 放在 [`CameraHumanTests/`](./CameraHumanTests/)，需要先在 Xcode UI 加 **Unit Testing Bundle** target（File → New → Target → iOS / Test / Unit Testing Bundle）。
-
-加完 target 後：
+Unit tests 放在 [`CameraHumanTests/`](./CameraHumanTests/)，UI smoke tests 放在 [`CameraHumanUITests/`](./CameraHumanUITests/)。兩個 test target 都已加入專案。
 
 ```bash
 xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
@@ -59,8 +57,17 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
   test
 ```
 
-或 Xcode 內按 `Cmd+U`。目前有 4 個 test class，共 55 個 test case：
-`KeywordChatEngineTests`（15）/ `CameraDiagnosticsTests`（12）/ `ShotPlannerStoreTests`（14）/ `CameraSettingsStoreTests`（14）。
+或 Xcode 內按 `Cmd+U`。目前 unit tests 共 5 個 test class、91 個 test case；另有 5 個 UI smoke tests。
+
+只跑 UI tests：
+
+```bash
+xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -only-testing:CameraHumanUITests test
+```
+
+UI tests 會用 `-ui-testing` 啟動參數清空測試 App sandbox 中的設定與錄影，並停用真實 camera capture session。
 
 只跑指定一個 test class：
 

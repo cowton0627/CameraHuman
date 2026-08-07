@@ -13,6 +13,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
+        if ProcessInfo.processInfo.arguments.contains("-ui-testing"),
+           let bundleIdentifier = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleIdentifier)
+            if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                try? FileManager.default.removeItem(
+                    at: documentsDirectory.appendingPathComponent("Recordings", isDirectory: true)
+                )
+            }
+        }
+
         let window = UIWindow(windowScene: windowScene)
         window.rootViewController = RootTabBarController()
         window.makeKeyAndVisible()
