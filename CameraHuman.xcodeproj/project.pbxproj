@@ -27,6 +27,8 @@
 		A100000A0000000000000002 /* CameraHumanUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CameraHumanUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		918673D12FB2BA55001CE5F4 /* CameraHumanTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CameraHumanTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		91C4CA6A2BA154550058B34B /* CameraHuman.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraHuman.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEED00000000000000000000 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Signing.xcconfig; sourceTree = SOURCE_ROOT; };
+		FEED00000000000000000002 /* Signing.local.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Config/Signing.local.xcconfig.example; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -88,6 +90,15 @@
 				A100000A0000000000000002 /* CameraHumanUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		FEED00000000000000000001 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				FEED00000000000000000000 /* Signing.xcconfig */,
+				FEED00000000000000000002 /* Signing.local.xcconfig.example */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -266,6 +277,7 @@
 /* Begin XCBuildConfiguration section */
 		A100000A0000000000000008 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FEED00000000000000000000 /* Signing.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -283,6 +295,7 @@
 		};
 		A100000A0000000000000009 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FEED00000000000000000000 /* Signing.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -300,6 +313,7 @@
 		};
 		918673D72FB2BA55001CE5F4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FEED00000000000000000000 /* Signing.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -321,6 +335,7 @@
 		};
 		918673D82FB2BA55001CE5F4 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FEED00000000000000000000 /* Signing.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -461,6 +476,7 @@
 		};
 		91C4CA822BA154570058B34B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FEED00000000000000000000 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -487,6 +503,7 @@
 		};
 		91C4CA832BA154570058B34B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FEED00000000000000000000 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

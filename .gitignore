@@ -46,3 +46,6 @@ fastlane/test_output
 
 # Claude Code 專案規則（本機保留，不上 git）
 CLAUDE.md
+
+# Local signing settings (Team ID stays off git)
+Config/Signing.local.xcconfig

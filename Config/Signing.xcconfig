@@ -1,0 +1,13 @@
+// Signing.xcconfig — tracked by git.
+//
+// Keeps a Team ID out of project.pbxproj, which is shared. The real value lives
+// in Signing.local.xcconfig, which git ignores.
+//
+// First time on a new machine:
+//   cp Config/Signing.local.xcconfig.example Config/Signing.local.xcconfig
+// then fill in your Team ID. Simulator builds do not need it.
+
+#include? "Signing.local.xcconfig"
+
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM = $(LOCAL_DEVELOPMENT_TEAM)
