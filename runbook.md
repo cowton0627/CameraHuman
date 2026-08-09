@@ -69,6 +69,22 @@ xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
 
 UI tests 會用 `-ui-testing` 啟動參數清空測試 App sandbox 中的設定與錄影，並停用真實 camera capture session。
 
+Visual regression tests 位於 [`CameraHumanUITests/VisualRegressionTests.swift`](./CameraHumanUITests/VisualRegressionTests.swift)，目前比對 Media 空狀態、Assistant 與 Settings 三個穩定畫面。圖片 baseline 放在 [`CameraHumanUITests/Snapshots/`](./CameraHumanUITests/Snapshots/)；要建立或更新 baseline，先用固定 Simulator 執行測試，然後檢查 `/tmp/CameraHumanSnapshots/` 的圖片並複製到 snapshots 目錄：
+
+```bash
+xcodebuild -project CameraHuman.xcodeproj -scheme CameraHuman \
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4.1' \
+  -only-testing:CameraHumanUITests/VisualRegressionTests \
+  -parallel-testing-enabled NO \
+  CODE_SIGNING_ALLOWED=NO test
+```
+
+```bash
+cp /tmp/CameraHumanSnapshots/*.png CameraHumanUITests/Snapshots/
+```
+
+更新前請人工檢查產生的 PNG，並固定 Xcode、Simulator、OS、語系與顯示比例；一般功能改動不應自動接受 baseline 變更。
+
 只跑指定一個 test class：
 
 ```bash
@@ -138,16 +154,18 @@ xcrun simctl spawn "$SIM_UDID" log stream --level=debug \
 
 ---
 
-## 重生 App Icon
+## 驗證 / 更換 App Icon
 
-icon 是 [`scripts/generate_app_icon.swift`](./scripts/generate_app_icon.swift) 用 CoreGraphics 畫的 1024×1024 PNG。改顏色 / 形狀就改 script 裡的常數重跑：
+現行 icon 的 source of truth 是 [`AppIcon.appiconset/AppIcon-1024.png`](./CameraHuman/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png)。更換後用以下指令確認尺寸與 alpha：
 
 ```bash
-swift scripts/generate_app_icon.swift
-file CameraHuman/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+sips -g pixelWidth -g pixelHeight -g hasAlpha -g format \
+  CameraHuman/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
 ```
 
-預期輸出：`PNG image data, 1024 x 1024, 8-bit/color RGBA, non-interlaced`
+預期：1024×1024、PNG、`hasAlpha: no`。原圖要滿版到四邊，不要自行加圓角；圓角由 iOS 套用。
+
+[`scripts/generate_app_icon.swift`](./scripts/generate_app_icon.swift) 是舊版日落 icon 的歷史腳本，不再是現行圖示來源，不要重跑後覆蓋目前 PNG。
 
 ---
 
@@ -235,7 +253,8 @@ git push origin main
 - `CameraHuman.xcodeproj/project.pbxproj`：升過 `objectVersion = 71` + 同步資料夾。手動編輯易壞，盡量讓 Xcode 自動處理
 - `Resources/Info.plist`：權限描述、`UILaunchStoryboardName`、orientation 都靠這個檔
 - `.gitignore`：新增類別（例如改用 SPM、加 fastlane）時要回來看一下
-- `scripts/generate_app_icon.swift`：改完一定要把 `AppIcon-1024.png` 重跑一次再 commit，不要單 commit script 不 commit png
+- `AppIcon.appiconset/AppIcon-1024.png`：現行 icon 的 source of truth；維持 1024×1024 PNG 且不含 alpha
+- `scripts/generate_app_icon.swift`：舊版 icon 的歷史參考，不要重跑後覆蓋現行 PNG
 
 ### Build 失敗先分型
 

@@ -78,7 +78,6 @@
 - `AVFoundation` — capture session、錄影、音訊
 - `AVKit` — 素材播放（`AVPlayerViewController`）
 - `Foundation` — `UserDefaults`、`NotificationCenter`、`FileManager`
-- `CoreGraphics` — App icon 生成 script
 
 Persistence 走 `UserDefaults` + `Documents/Recordings/` + JSON metadata，不用 CoreData。
 最低部署 iOS 13.0。
@@ -135,7 +134,7 @@ CameraHuman/
 │   └── KeyboardObserver.swift             鍵盤升降監聽，可重用
 └── Resources/                             Assets.xcassets / Info.plist / Base.lproj / .xcdatamodeld
 scripts/
-└── generate_app_icon.swift                用 CoreGraphics 產 1024×1024 AppIcon
+└── generate_app_icon.swift                舊版 AppIcon 的歷史生成 script
 ```
 
 ## Documentation

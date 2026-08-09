@@ -132,16 +132,20 @@
 
 ---
 
-## 11. AppIcon 用 CoreGraphics script 生成，不外包設計
+## 11. AppIcon 改用「光圈＋影人」品牌圖，PNG 是目前 source of truth
 
-**做法**：[`scripts/generate_app_icon.swift`](./scripts/generate_app_icon.swift) 用 `CGContext` + `CGGradient` 畫 1024×1024 PNG，輸出到 `Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png`。
+**做法**：以 image generation 產生 1024×1024 的不透明 PNG，直接存放在 [`AppIcon.appiconset/AppIcon-1024.png`](./CameraHuman/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png)。主圖形以光圈包住抽象人物，紅橘色圓點代表錄影，深色底與銀色鏡片對應專業攝影工具。iOS 會套用圓角遮罩，因此原圖維持滿版正方形，不自行畫圓角。
 
 **為什麼**：
-- 個人 repo、原型階段，不需要找設計師
-- 改色 / 改造型只要改 script 重跑，比 Figma export 還快
-- 確定品牌方向後再升級到專業設計，初期不必要
+- 舊版日落圓盤容易被理解成天氣或風景 App，沒有清楚表達 CameraHuman 的「拍攝＋人物創作」定位
+- 單一高對比符號縮到 Home Screen 尺寸後仍可辨識，比多物件或寫實相機圖案更適合 App icon
+- 暖色錄影點保留明確的攝影語意，深色技術感也更接近 App 內的專業拍攝介面
 
-**放棄**：用 SF Symbol 直接當 icon（iOS 圓角會把 symbol 切到，需要自己處理 padding）；找線上免費 icon（授權麻煩）。
+**規格與驗證**：1024×1024 PNG、無 alpha、無文字、無外框；2026-08-07 已確認資產規格。專案 build 當時因本機缺少 iOS 26.4 Platform，停在 `LaunchScreen.storyboard`，不是 icon 資產錯誤。
+
+**取代的舊方案**：[`scripts/generate_app_icon.swift`](./scripts/generate_app_icon.swift) 仍保留作為舊版 CoreGraphics 圖示的歷史參考，但不再是目前 icon 的生成來源；不要重跑後覆蓋現行 PNG。
+
+**放棄**：延用日落圖（產品語意不明）；用 SF Symbol 或一般相機外框（辨識度偏通用）；加入文字（小尺寸不可讀）。
 
 ---
 
