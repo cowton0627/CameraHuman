@@ -202,4 +202,13 @@ modified: CameraHuman.xcodeproj/xcuserdata/<user>.xcuserdatad/xcdebugger/Breakpo
 
 **解法**：把 18 處硬編碼的 timeout 統一成 `UITestTimeout.standard`（15 秒，定義在 `CameraHumanUITests/UITestTimeout.swift`）。等待上限放寬不影響正常速度——`waitForExistence` 一看到元素就返回，上限只決定「真的卡住時多久判定失敗」。本機實測放寬前後耗時相同（5–22 秒），6/6 通過。
 
-**之後辨識**：CI 紅但本機綠、而且**同一份程式碼在 CI 上的耗時差異很大**時，先懷疑等待上限，不要急著改被測程式。UI test 的 timeout 不要散落成 magic number，集中成一個常數才好一次調整。
+**已在 CI 驗收**（commit `4b9da35`，Unit + UI 兩個 job 皆 success），此問題結案。而且這次是在**比失敗那次更差的條件**下通過的——`VisualRegressionTests` 在 runner 上跑了 **70.9 秒**（失敗那次是 47.9 秒），等待上限放寬後照樣過。runner 耗時實測分布：
+
+| 執行 | `VisualRegressionTests` 耗時 | 結果 |
+|---|---|---|
+| 本機 | 17.4 秒 | ✅ |
+| CI `5982b35` | 22 秒 | ✅ |
+| CI `a336d89` | 47.9 秒 | ❌ 5 秒上限逾時 |
+| CI `4b9da35` | 70.9 秒 | ✅ 15 秒上限 |
+
+**之後辨識**：CI 紅但本機綠、而且**同一份程式碼在 CI 上的耗時差異很大**時，先懷疑等待上限，不要急著改被測程式。UI test 的 timeout 不要散落成 magic number，集中成一個常數才好一次調整。從上表也看得出來，CI 耗時可以是本機的 4 倍且沒有上限保證——之後若再遇到偶發逾時，優先考慮再調高這個常數，而不是加 sleep 或重試。
