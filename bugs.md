@@ -191,3 +191,15 @@ modified: CameraHuman.xcodeproj/xcuserdata/<user>.xcuserdatad/xcdebugger/Breakpo
 **之後辨識**：像素級 visual regression 只要 baseline 與比對環境不同機，就會有這種「本機綠、CI 紅、數字穩定不隨機」的特徵。看到就往算繪差異想，不要先懷疑 UI；判斷方法是把 CI artifact 的實際截圖抓下來，看差異是**細線**（算繪雜訊）還是**色塊**（真的回歸）。
 
 **驗證紀律**：改完比對演算法後，要拿「刻意注入的回歸」當對照組跑一次——把 baseline 的一顆按鈕塗掉，確認測試真的會紅（實測 0.617%，與離線試算的 0.61% 相符）。否則計數寫錯導致永遠算出 0 時，測試會「通過」而變成擺設。
+
+## 12. UI test 在 CI 偶發逾時（`waitForExistence` 5 秒不夠）
+
+**症狀**：修好 §11 之後，只改了兩個 `.md` 檔的 commit `a336d89` 仍然讓 UI Tests job 紅掉。失敗點是 `waitForExistence(timeout: 5)` 逾時（點 Settings 後標題沒出現），**不是**像素比對。
+
+**判讀方式**：看失敗的行號。§11 是掛在 `assertSnapshot` 的 `XCTAssertLessThanOrEqual`（訊息含 `Visual difference for ...`）；這次是掛在測試主體的 `XCTAssertTrue`。另外因為 `continueAfterFailure = false`，測試能跑到後面的 settings 區段，反而證明前面 assistant 的像素比對**已經通過**——§11 的修復是有效的。
+
+**根因**：GitHub runner 效能浮動很大。同一份程式碼，`VisualRegressionTests` 本機跑 18–22 秒、CI 上一次 22 秒、這次 **47.9 秒**，慢了一倍多。原本 2–5 秒的等待上限在快的時候夠用，慢的時候就爆掉。這個脆弱點一直都在，只是以前每次都先死在像素比對，沒機會浮現。
+
+**解法**：把 18 處硬編碼的 timeout 統一成 `UITestTimeout.standard`（15 秒，定義在 `CameraHumanUITests/UITestTimeout.swift`）。等待上限放寬不影響正常速度——`waitForExistence` 一看到元素就返回，上限只決定「真的卡住時多久判定失敗」。本機實測放寬前後耗時相同（5–22 秒），6/6 通過。
+
+**之後辨識**：CI 紅但本機綠、而且**同一份程式碼在 CI 上的耗時差異很大**時，先懷疑等待上限，不要急著改被測程式。UI test 的 timeout 不要散落成 magic number，集中成一個常數才好一次調整。

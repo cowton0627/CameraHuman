@@ -19,23 +19,23 @@ final class VisualRegressionTests: XCTestCase {
     func test_stableScreensMatchBaselines() throws {
         try assertSnapshot(named: "media-empty") {
             let media = app.buttons["dock.media"]
-            XCTAssertTrue(media.waitForExistence(timeout: 5))
+            XCTAssertTrue(media.waitForExistence(timeout: UITestTimeout.standard))
             media.tap()
-            XCTAssertTrue(app.staticTexts["media.empty"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts["media.empty"].waitForExistence(timeout: UITestTimeout.standard))
         }
 
         try assertSnapshot(named: "assistant") {
             let assistant = app.buttons["dock.assistant"]
-            XCTAssertTrue(assistant.waitForExistence(timeout: 5))
+            XCTAssertTrue(assistant.waitForExistence(timeout: UITestTimeout.standard))
             assistant.tap()
-            XCTAssertTrue(app.staticTexts["assistant.title"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts["assistant.title"].waitForExistence(timeout: UITestTimeout.standard))
         }
 
         try assertSnapshot(named: "settings") {
             let settings = app.buttons["dock.settings"]
-            XCTAssertTrue(settings.waitForExistence(timeout: 5))
+            XCTAssertTrue(settings.waitForExistence(timeout: UITestTimeout.standard))
             settings.tap()
-            XCTAssertTrue(app.staticTexts["settings.title"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts["settings.title"].waitForExistence(timeout: UITestTimeout.standard))
         }
     }
 
