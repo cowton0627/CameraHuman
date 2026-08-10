@@ -186,7 +186,7 @@ modified: CameraHuman.xcodeproj/xcuserdata/<user>.xcuserdatad/xcdebugger/Breakpo
 
 **排除過的假設**（都不是）：UI 改了忘記更新 baseline（baseline 之後 App 原始碼零改動）、模擬器規格不同（一致）、隨機 flake（兩次 1.17% / 1.22% 穩定）、版面位移（平移 ±8px 比對，`dy=0` 就是最佳解）。
 
-**解法**：比對改為「成塊差異」——差異遮罩做一次 5×5 形態學侵蝕，只留整個鄰域都超標的像素。細節與參數見 `DECISIONS.md` §15。
+**解法**：比對改為「成塊差異」——差異遮罩做一次 5×5 形態學侵蝕，只留整個鄰域都超標的像素。細節與參數見 `DECISIONS.md` §15。**已在 CI 驗收**（commit `5982b35`，Unit + UI 兩個 job 皆 success），此問題結案。
 
 **之後辨識**：像素級 visual regression 只要 baseline 與比對環境不同機，就會有這種「本機綠、CI 紅、數字穩定不隨機」的特徵。看到就往算繪差異想，不要先懷疑 UI；判斷方法是把 CI artifact 的實際截圖抓下來，看差異是**細線**（算繪雜訊）還是**色塊**（真的回歸）。
 
