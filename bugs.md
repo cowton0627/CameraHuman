@@ -177,3 +177,17 @@ modified: CameraHuman.xcodeproj/xcuserdata/<user>.xcuserdatad/xcdebugger/Breakpo
   - 失敗路徑記得 `commitConfiguration`，不留懸空 begin
 
 **之後辨識**：UI 操作後 preview 短暫黑屏，先看是不是觸發了不必要的 capture session 重新 configure；對「重複觸發 noop 路徑」一律加短路。
+
+## 11. Visual regression 在 CI 永遠紅、本機永遠綠
+
+**症狀**：`iOS Tests` workflow 的 UI Tests job 持續失敗，只掛在 `test_stableScreensMatchBaselines` 的 `assistant` 這一頁（1.17% / 1.22%，門檻 0.5%），其餘 5 個 UI smoke test 全過；同一個測試在本機跑是綠的。
+
+**根因**：文字抗鋸齒的次像素差異。baseline 錄在本機、比對跑在 GitHub runner，即使模擬器與 Xcode 版本完全相同（`iPhone 17 / iOS 26.4.1` + Xcode 26.4.1），字的邊緣灰階過渡仍有落差。逐像素比對把這種細邊當成差異，文字越多累積越高——`assistant` 文字量最大所以先破線。
+
+**排除過的假設**（都不是）：UI 改了忘記更新 baseline（baseline 之後 App 原始碼零改動）、模擬器規格不同（一致）、隨機 flake（兩次 1.17% / 1.22% 穩定）、版面位移（平移 ±8px 比對，`dy=0` 就是最佳解）。
+
+**解法**：比對改為「成塊差異」——差異遮罩做一次 5×5 形態學侵蝕，只留整個鄰域都超標的像素。細節與參數見 `DECISIONS.md` §15。
+
+**之後辨識**：像素級 visual regression 只要 baseline 與比對環境不同機，就會有這種「本機綠、CI 紅、數字穩定不隨機」的特徵。看到就往算繪差異想，不要先懷疑 UI；判斷方法是把 CI artifact 的實際截圖抓下來，看差異是**細線**（算繪雜訊）還是**色塊**（真的回歸）。
+
+**驗證紀律**：改完比對演算法後，要拿「刻意注入的回歸」當對照組跑一次——把 baseline 的一顆按鈕塗掉，確認測試真的會紅（實測 0.617%，與離線試算的 0.61% 相符）。否則計數寫錯導致永遠算出 0 時，測試會「通過」而變成擺設。

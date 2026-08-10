@@ -117,4 +117,5 @@
 - ✅ 2026-08-07 建立 GitHub Actions `iOS Tests` workflow：`main` push / PR 及手動觸發時，分開執行 91 個 unit tests 與 5 個 UI smoke tests；固定 macOS 26、Xcode 26.4.1、iPhone 17 / iOS 26.4.1，兩個 job 都關閉 parallel testing 以避開 CoreSimulator clone device 偶發卡住，失敗時保留 `.xcresult` artifact。
 - ✅ 2026-08-07 新增原生 XCTest visual regression：對 Media 空狀態、Assistant、Settings 三個穩定頁面做 screenshot pixel diff；baseline 固定 iPhone 17 / iOS 26.4.1，差異時保留實際截圖於 `.xcresult`。
 - 📝 2026-08-09 記錄本次進度：visual regression 與完整 UI test target（5 個 smoke tests + 1 個 visual regression）均已通過；已偵測到可用的 Chun Li’s iPhone（iOS 26.6），下一步進行 4:3、前後鏡頭、錄影方向與手動控制的真機驗證。開始前需先確認 `CameraHuman.xcodeproj/project.pbxproj` 的 merge / signing 設定已整理完成。
+- ✅ 2026-08-10 修好 CI 上長期紅燈的 visual regression：比對改為「成塊差異」（差異遮罩做 5×5 形態學侵蝕），濾掉跨機器的文字抗鋸齒雜訊。實測雜訊由 1.22% 降到 0.034%（兩次獨立 CI 取樣），門檻收緊到 0.2%；並以「注入回歸」對照組驗過測試仍會紅（0.617%）。理由見 `DECISIONS.md` §15，症狀與排除過程見 `bugs.md` §11。
 - ✅ Media Quick Wins 三項（模擬器驗過）：列表縮圖 + 片長（抽 `MediaThumbnailProvider`，`AVAssetImageGenerator` 背景產圖 + NSCache）、長按 `UIContextMenuConfiguration`（Note / Link / Share / Save to Photos / Delete）、分享（`UIActivityViewController`）與匯出到照片（`PHPhotoLibrary`，補 `NSPhotoLibraryAddUsageDescription`）。swipe 操作保留
