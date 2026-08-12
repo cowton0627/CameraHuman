@@ -4,6 +4,16 @@
 
 > Bundle / scheme / target / repo 名稱維持 `CameraHuman`；「影人」是 iOS home screen 圖示下方的顯示名稱（`CFBundleDisplayName`）。
 
+| Media | Assistant | Settings |
+|---|---|---|
+| ![Media](docs/screenshots/media.png) | ![Assistant](docs/screenshots/assistant.png) | ![Settings](docs/screenshots/settings.png) |
+
+> 三張都由 [`scripts/capture_readme_screenshots.sh`](scripts/capture_readme_screenshots.sh) 自動產生，改版後重跑即可更新。
+> `Media` 是尚無素材的空狀態。
+>
+> **`Camera` 頁沒有截圖**：模擬器沒有實體鏡頭，而且 app 在 `-ui-testing` 下會停用相機硬體並在畫面上
+> 標示「Camera hardware disabled for UI tests」——截出來只會展示測試環境，不是產品本身。這頁要等真機截圖。
+
 ## Current App Structure
 
 底部自製 dock（不是 `UITabBar` 預設樣式）分成四頁：
